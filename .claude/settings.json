@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "aha": {
+      "command": "node",
+      "args": ["mcp-server/dist/index.js"],
+      "env": {
+        "AHA_SUBDOMAIN": "cotality",
+        "AHA_API_KEY": "${AHA_API_KEY}"
+      }
+    }
+  }
+}
