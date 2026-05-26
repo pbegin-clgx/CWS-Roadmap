@@ -31,22 +31,44 @@ describe('getRecord', () => {
     mockFetch.mockResolvedValue({ ok: false, status: 404, text: async () => 'Not Found' });
     await expect(getRecord('SYM-99999')).rejects.toThrow('Aha API error: 404 Not Found');
   });
+
+  it('throws when AHA_SUBDOMAIN is not set', async () => {
+    const saved = process.env.AHA_SUBDOMAIN;
+    delete process.env.AHA_SUBDOMAIN;
+    await expect(getRecord('SYM-1')).rejects.toThrow('AHA_SUBDOMAIN environment variable is not set');
+    process.env.AHA_SUBDOMAIN = saved;
+  });
 });
 
 describe('searchDocuments', () => {
-  it('searches requirements with the query term', async () => {
+  it('searches using the /search endpoint and filters to Requirements', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => ({ requirements: [{ id: 'R1', reference_num: 'SYM-100-1', name: 'req', description: 'd' }] }),
+      json: async () => ({
+        records: [
+          { type: 'Requirement', id: 'R1', reference_num: 'SYM-100-1', name: 'req', description: 'd' },
+          { type: 'Feature', id: 'F1', reference_num: 'SYM-100', name: 'feat', description: 'f' },
+        ],
+      }),
     });
 
     const results = await searchDocuments('claim status');
 
     expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/search?'),
+      expect.any(Object)
+    );
+    expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('claim+status'),
       expect.any(Object)
     );
     expect(results).toHaveLength(1);
+    expect(results[0].reference_num).toBe('SYM-100-1');
+  });
+
+  it('throws on non-OK response', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, text: async () => 'Internal Server Error' });
+    await expect(searchDocuments('test')).rejects.toThrow('Aha API error: 500 Internal Server Error');
   });
 });
 
@@ -90,5 +112,10 @@ describe('updateRequirement', () => {
       expect.objectContaining({ method: 'PUT' })
     );
     expect(result.description).toBe('Updated');
+  });
+
+  it('throws on non-OK response', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 404, text: async () => 'Not Found' });
+    await expect(updateRequirement('SYM-12345-1', { description: 'x' })).rejects.toThrow('Aha API error: 404 Not Found');
   });
 });
