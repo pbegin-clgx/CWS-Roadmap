@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<!--
+  AI EDITOR INSTRUCTION (Claude Code, Copilot, any AI assistant):
+  This file carries a `Last updated: YYYY-MM-DD` line in its header
+  (search for class="last-updated"). EVERY time you modify this file:
+    1. Run `date "+%Y-%m-%d"` to get the current date.
+    2. Update the `Last updated:` value to that exact string before finishing.
+    3. Keep the format identical across all AIRW HTML docs in this folder.
+  Do NOT guess the date and do NOT skip this step.
+
+  COMPANION FLOWCHART (keep in sync):
+  `pm-requirements-flowchart.html` is a Mermaid rendering of the workflow described here.
+  If you change the workflow shape (phases, gates, loop conditions), update the flowchart too.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-First Requirements Workflow · Cotality Product Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfbfd; --surface: #ffffff; --surface-2: #f4f4f7; --surface-3: #ebebf0;
+    --fg: #0f172a; --fg-strong: #020617; --muted: #64748b; --muted-strong: #475569;
+    --border: #e4e4ea; --border-strong: #d4d4dc;
+    --accent: #f59e0b; --accent-deep: #d97706; --accent-soft: #fff7ed;
+    --pm: #6366f1; --pm-deep: #4f46e5; --pm-soft: #eef2ff;
+    --human: #e11d48; --human-soft: #fff1f3;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-md: 0 4px 12px -2px rgba(15,23,42,0.06), 0 2px 6px -2px rgba(15,23,42,0.04);
+    --shadow-lg: 0 20px 40px -12px rgba(15,23,42,0.12), 0 8px 16px -4px rgba(15,23,42,0.06);
+    --radius: 12px; --radius-sm: 8px; --radius-lg: 18px;
+    --hero-grad: linear-gradient(135deg, #f59e0b 0%, #ef4444 45%, #ec4899 100%);
+    --hero-grad-soft: radial-gradient(ellipse at top left, rgba(245,158,11,0.12), transparent 50%),
+                      radial-gradient(ellipse at top right, rgba(236,72,153,0.08), transparent 50%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #08080b; --surface: #111118; --surface-2: #16161e; --surface-3: #1d1d27;
+      --fg: #e4e4e7; --fg-strong: #fafafa; --muted: #9ca3af; --muted-strong: #cbd5e1;
+      --border: #27272f; --border-strong: #3a3a44;
+      --accent: #fbbf24; --accent-deep: #f59e0b; --accent-soft: rgba(251,191,36,0.08);
+      --pm: #818cf8; --pm-deep: #6366f1; --pm-soft: rgba(129,140,248,0.12);
+      --human: #fb7185; --human-soft: rgba(251,113,133,0.14);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3); --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.4);
+      --shadow-lg: 0 20px 40px -12px rgba(0,0,0,0.6);
+      --hero-grad: linear-gradient(135deg, #fbbf24 0%, #f87171 45%, #f472b6 100%);
+      --hero-grad-soft: radial-gradient(ellipse at top left, rgba(251,191,36,0.10), transparent 50%),
+                        radial-gradient(ellipse at top right, rgba(244,114,182,0.08), transparent 50%);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px; line-height: 1.62; color: var(--fg); background: var(--bg);
+    background-image: var(--hero-grad-soft); background-repeat: no-repeat; background-size: 100% 800px;
+    -webkit-font-smoothing: antialiased; font-feature-settings: "cv02","cv03","cv04","cv11","ss01";
+  }
+  .page { max-width: 1280px; margin: 0 auto; padding: 0 clamp(1rem,3vw,2rem); }
+  .layout { display: grid; grid-template-columns: minmax(0,1fr); gap: 2.5rem; padding-bottom: 6rem; }
+  @media (min-width: 1080px) { .layout { grid-template-columns: 240px minmax(0,1fr); align-items: start; } }
+  main { min-width: 0; max-width: 820px; }
+  @media (min-width: 1080px) { main { padding-top: 1rem; } }
+
+  /* Hero */
+  .hero { padding: 3.5rem 0 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent-deep); background: var(--accent-soft);
+    padding: 0.35rem 0.75rem; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); margin-bottom: 1.1rem;
+  }
+  .hero-eyebrow::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+  @media (prefers-color-scheme: dark) { .hero-eyebrow { color: var(--accent); } }
+  h1 {
+    font-size: clamp(2rem,5vw,3.25rem); font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.025em; margin: 0 0 1rem;
+    background: var(--hero-grad); -webkit-background-clip: text;
+    background-clip: text; -webkit-text-fill-color: transparent; max-width: 20ch;
+  }
+  .hero-sub { font-size: 1.1rem; line-height: 1.55; color: var(--muted-strong); max-width: 60ch; margin: 0; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; font-size: 0.85rem; }
+  .hero-meta .chip {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 0.35rem 0.75rem; border-radius: 999px; color: var(--muted-strong); box-shadow: var(--shadow-sm);
+  }
+  .hero-meta .chip strong { color: var(--fg-strong); font-weight: 600; }
+  .last-updated {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+    color: var(--accent-deep); background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 999px;
+  }
+  .last-updated::before { content: "⏱"; font-size: 0.9rem; }
+  @media (prefers-color-scheme: dark) { .last-updated { color: var(--accent); } }
+
+  /* Typography */
+  h2 {
+    font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: var(--fg-strong);
+    margin: 3.5rem 0 1rem; padding-bottom: 0.65rem; border-bottom: 1px solid var(--border);
+    scroll-margin-top: 80px; position: relative;
+  }
+  h2::before {
+    content: ""; position: absolute; bottom: -1px; left: 0;
+    width: 56px; height: 3px; border-radius: 2px; background: var(--hero-grad);
+  }
+  h3 { font-size: 1.22rem; font-weight: 700; letter-spacing: -0.01em; color: var(--fg-strong); margin: 2.2rem 0 0.6rem; scroll-margin-top: 80px; }
+  h4 { font-size: 1.02rem; font-weight: 600; color: var(--pm-deep); margin: 1.4rem 0 0.4rem; }
+  @media (prefers-color-scheme: dark) { h4 { color: var(--pm); } }
+  p { margin: 1.1rem 0; }
+  ul, ol { padding-left: 1.4rem; margin: 1rem 0; }
+  li { margin: 0.6rem 0; line-height: 1.6; }
+  li::marker { color: var(--muted); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+  a { color: var(--pm-deep); text-decoration: none; font-weight: 500; transition: color 0.12s; }
+  a:hover { color: var(--pm); text-decoration: underline; text-underline-offset: 3px; }
+  @media (prefers-color-scheme: dark) { a { color: var(--pm); } }
+  strong { color: var(--fg-strong); font-weight: 600; }
+  a strong, a code { color: inherit; }
+  em { color: var(--muted-strong); }
+
+  /* Code */
+  code {
+    background: var(--surface-2); padding: 0.13rem 0.4rem; border-radius: 5px;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.84em; font-weight: 500; color: var(--fg-strong);
+    word-break: break-word; border: 1px solid var(--border);
+  }
+  pre {
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    padding: 1.1rem 1.2rem; border-radius: var(--radius); overflow-x: auto;
+    font-size: 0.82rem; line-height: 1.6; border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm); margin: 1rem 0;
+  }
+  pre code { background: transparent; padding: 0; font-size: inherit; border: none; color: var(--fg); }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: separate; border-spacing: 0; margin: 1.2rem 0;
+    font-size: 0.92rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  th, td { text-align: left; padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; color: var(--fg-strong); font-size: 0.82rem; letter-spacing: 0.02em; text-transform: uppercase; border-bottom: 1px solid var(--border-strong); }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover td { background: var(--surface-2); }
+  td:first-child { font-weight: 500; color: var(--fg-strong); }
+
+  /* Blockquote */
+  blockquote {
+    margin: 1rem 0; padding: 0.7rem 1.1rem;
+    border-left: 3px solid var(--accent); background: var(--surface-2);
+    color: var(--muted-strong); border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  /* Callouts */
+  .warn {
+    background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    border-left: 4px solid var(--accent); padding: 0.9rem 1.2rem; border-radius: var(--radius);
+    font-size: 0.94rem; margin: 1.2rem 0; box-shadow: var(--shadow-sm);
+  }
+  .warn strong:first-child { color: var(--accent-deep); }
+  @media (prefers-color-scheme: dark) { .warn strong:first-child { color: var(--accent); } }
+  .info {
+    background: var(--pm-soft); border: 1px solid color-mix(in srgb, var(--pm) 20%, transparent);
+    border-left: 4px solid var(--pm); padding: 0.9rem 1.2rem; border-radius: var(--radius);
+    font-size: 0.94rem; margin: 1.2rem 0; box-shadow: var(--shadow-sm);
+  }
+  .tldr {
+    background: linear-gradient(135deg, var(--accent-soft), transparent 65%), var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+    border-radius: var(--radius-lg); padding: 1.5rem 1.7rem; margin: 1.8rem 0 2rem;
+    box-shadow: var(--shadow-md); position: relative; overflow: hidden;
+  }
+  .tldr::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--hero-grad); }
+  .tldr h3 {
+    margin-top: 0; color: var(--accent-deep); font-size: 1.05rem;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    display: flex; align-items: center; gap: 0.55rem;
+  }
+  .tldr h3::before { content: "✦"; color: var(--accent); font-size: 1.2rem; }
+  @media (prefers-color-scheme: dark) { .tldr h3 { color: var(--accent); } }
+
+  /* Role badge */
+  .role {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+    padding: 0.18rem 0.55rem; border-radius: 999px; margin-left: 0.35rem;
+    vertical-align: middle; text-transform: uppercase; border: 1px solid transparent; line-height: 1;
+  }
+  .role-pm { background: var(--pm-soft); color: var(--pm); border-color: color-mix(in srgb, var(--pm) 25%, transparent); }
+  .role-pm::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--pm); }
+
+  /* Phase badge */
+  .phase-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.2rem 0.6rem; border-radius: 999px;
+    background: var(--pm-soft); color: var(--pm);
+    border: 1px solid color-mix(in srgb, var(--pm) 25%, transparent); margin-right: 0.4rem;
+  }
+
+  /* Human gate callout */
+  .human-callout {
+    background: var(--human-soft); border: 1px solid color-mix(in srgb, var(--human) 18%, transparent);
+    border-left: 4px solid var(--human); border-radius: var(--radius);
+    padding: 0.85rem 1rem 0.85rem 3rem; margin: 1rem 0; font-size: 0.93rem; position: relative;
+  }
+  .human-callout::before { content: "👤"; position: absolute; left: 0.85rem; top: 0.75rem; font-size: 1.4rem; }
+  .human-callout strong:first-child {
+    color: var(--human); text-transform: uppercase; letter-spacing: 0.05em;
+    font-size: 0.78rem; display: block; margin-bottom: 0.25rem;
+  }
+
+  /* Sidebar TOC */
+  .sidebar {
+    position: sticky; top: 1.5rem; align-self: start;
+    max-height: calc(100vh - 3rem); overflow-y: auto; padding: 1rem 0; font-size: 0.88rem;
+  }
+  @media (max-width: 1079px) { .sidebar { display: none; } }
+  .sidebar-title {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.8rem; padding-left: 0.8rem;
+  }
+  .sidebar-nav ol { list-style: none; padding: 0; margin: 0; counter-reset: tocsec; }
+  .sidebar-nav li { counter-increment: tocsec; margin: 0; }
+  .sidebar-nav a {
+    display: block; padding: 0.45rem 0.8rem; color: var(--muted-strong);
+    border-left: 2px solid transparent; border-radius: 0 6px 6px 0;
+    font-weight: 500; transition: all 0.12s; line-height: 1.4;
+  }
+  .sidebar-nav a::before {
+    content: counter(tocsec) "."; display: inline-block; width: 1.5rem;
+    color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 500;
+  }
+  .sidebar-nav a:hover { color: var(--fg-strong); background: var(--surface-2); text-decoration: none; border-left-color: var(--border-strong); }
+  .sidebar-nav a.active { color: var(--accent-deep); background: var(--accent-soft); border-left-color: var(--accent); font-weight: 600; }
+  .sidebar-nav a.active::before { color: var(--accent-deep); }
+  @media (prefers-color-scheme: dark) {
+    .sidebar-nav a.active { color: var(--accent); }
+    .sidebar-nav a.active::before { color: var(--accent); }
+  }
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  /* Mobile TOC card */
+  .toc {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.1rem 1.4rem; margin: 1.5rem 0 2.5rem; font-size: 0.95rem; box-shadow: var(--shadow-sm);
+  }
+  .toc strong { display: block; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+  .toc ol { margin: 0; padding-left: 1.2rem; }
+  .toc li { margin: 0.25rem 0; }
+  .toc a { color: var(--fg); font-weight: 500; }
+  .toc a:hover { color: var(--accent-deep); }
+  @media (min-width: 1080px) { .toc { display: none; } }
+
+  /* Back to top */
+  .back-to-top {
+    position: fixed; right: 1.5rem; bottom: 1.5rem; width: 44px; height: 44px;
+    border-radius: 50%; background: var(--surface); border: 1px solid var(--border-strong);
+    color: var(--accent-deep); font-size: 1.2rem; font-weight: 700; cursor: pointer;
+    box-shadow: var(--shadow-md); opacity: 0; transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s, background 0.12s; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .back-to-top.visible { opacity: 1; transform: translateY(0); }
+  .back-to-top:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  @media (prefers-color-scheme: dark) {
+    .back-to-top { color: var(--accent); }
+    .back-to-top:hover { color: var(--bg); }
+  }
+
+  /* Page footer */
+  .page-footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--muted); }
+  ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--fg-strong); }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="layout">
+
+<aside class="sidebar" aria-label="Table of contents">
+  <div class="sidebar-title">On this page</div>
+  <nav class="sidebar-nav">
+    <ol>
+      <li><a href="#output">What this process produces</a></li>
+      <li><a href="#overview">The 8-stage workflow</a></li>
+      <li><a href="#stage1">Stage 1 — Research &amp; Context</a></li>
+      <li><a href="#stage2">Stage 2 — Market Problem</a></li>
+      <li><a href="#stage3">Stage 3 — Current Workflow</a></li>
+      <li><a href="#stage4">Stage 4 — Objectives</a></li>
+      <li><a href="#stage5">Stage 5 — Future Workflow</a></li>
+      <li><a href="#stage6">Stage 6 — Requirements</a></li>
+      <li><a href="#stage7">Stage 7 — Submit to Aha</a></li>
+      <li><a href="#quality">Quality Gate</a></li>
+      <li><a href="#conventions">Conventions &amp; markers</a></li>
+      <li><a href="#quickref">Quick-reference card</a></li>
+    </ol>
+  </nav>
+</aside>
+
+<main>
+
+<header class="hero">
+  <span class="hero-eyebrow">Cotality Product Team · Requirements Process</span>
+  <h1>AI-First Requirements Workflow</h1>
+  <p class="hero-sub">From Aha feature to dev-team-ready child requirements — a structured, phase-by-phase process with Claude as co-author. <span class="role role-pm">PM</span></p>
+  <div class="hero-meta">
+    <span class="chip"><strong>2</strong> commands &middot; /pm-req-new, /pm-req-review</span>
+    <span class="chip"><strong>7</strong> phases + quality gate</span>
+    <span class="chip"><strong>5</strong> PM approval gates</span>
+    <span class="last-updated">Last updated: 2026-05-27</span>
+  </div>
+</header>
+
+<!-- Mobile TOC -->
+<nav class="toc" aria-label="Page contents">
+  <strong>On this page</strong>
+  <ol>
+    <li><a href="#output">What this process produces</a></li>
+    <li><a href="#overview">The 8-stage workflow</a></li>
+    <li><a href="#stage1">Stage 1 — Research &amp; Context</a></li>
+    <li><a href="#stage2">Stage 2 — Market Problem</a></li>
+    <li><a href="#stage3">Stage 3 — Current Workflow</a></li>
+    <li><a href="#stage4">Stage 4 — Objectives</a></li>
+    <li><a href="#stage5">Stage 5 — Future Workflow</a></li>
+    <li><a href="#stage6">Stage 6 — Requirements</a></li>
+    <li><a href="#stage7">Stage 7 — Submit to Aha</a></li>
+    <li><a href="#quality">Quality Gate</a></li>
+    <li><a href="#conventions">Conventions &amp; markers</a></li>
+    <li><a href="#quickref">Quick-reference card</a></li>
+  </ol>
+</nav>
+
+<!-- SECTION 1 -->
+<h2 id="output">1. What this process produces</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 2 -->
+<h2 id="overview">2. The 8-stage workflow</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 3 -->
+<h2 id="stage1">3. Stage 1 — Research &amp; Context</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 4 -->
+<h2 id="stage2">4. Stage 2 — Market Problem</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 5 -->
+<h2 id="stage3">5. Stage 3 — Current Workflow</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 6 -->
+<h2 id="stage4">6. Stage 4 — Objectives</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 7 -->
+<h2 id="stage5">7. Stage 5 — Future Workflow</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 8 -->
+<h2 id="stage6">8. Stage 6 — Requirements</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 9 -->
+<h2 id="stage7">9. Stage 7 — Submit to Aha</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 10 -->
+<h2 id="quality">10. Quality Gate</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 11 -->
+<h2 id="conventions">11. Conventions &amp; markers</h2>
+<p><em>Content coming soon.</em></p>
+
+<!-- SECTION 12 -->
+<h2 id="quickref">12. Quick-reference card</h2>
+<p><em>Content coming soon.</em></p>
+
+<hr>
+<p class="page-footer">
+  <strong>Companion docs:</strong>
+  <a href="pm-requirements-flowchart.html">Workflow flowcharts</a> &middot;
+  <a href="pm-requirements-example.html">End-to-end example (SYM-2566)</a> &middot;
+  <a href="../Dev team Process/spec-driven-development.html">Dev team: spec-driven development</a>
+</p>
+
+</main>
+</div>
+</div>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">↑</button>
+
+<script>
+  (function () {
+    const links = document.querySelectorAll('.sidebar-nav a');
+    const map = new Map();
+    links.forEach(a => {
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (target) map.set(target, a);
+    });
+    let activeLink = null;
+    const setActive = (el) => {
+      if (!el || el === activeLink) return;
+      if (activeLink) activeLink.classList.remove('active');
+      el.classList.add('active');
+      activeLink = el;
+    };
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter(e => e.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible.length > 0) { const link = map.get(visible[0].target); setActive(link); }
+    }, { rootMargin: '-80px 0px -65% 0px', threshold: 0 });
+    map.forEach((_, target) => observer.observe(target));
+    const btt = document.getElementById('backToTop');
+    const onScroll = () => {
+      if (window.scrollY > 400) btt.classList.add('visible');
+      else btt.classList.remove('visible');
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+</script>
+</body>
+</html>
