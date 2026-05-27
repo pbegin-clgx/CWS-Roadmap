@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<!--
+  AI EDITOR INSTRUCTION (Claude Code, Copilot, any AI assistant):
+  This file carries a `Last updated: YYYY-MM-DD` line in its header
+  (search for class="last-updated"). EVERY time you modify this file:
+    1. Run `date "+%Y-%m-%d"` to get the current date.
+    2. Update the `Last updated:` value to that exact string before finishing.
+    3. Keep the format identical across all AIRW HTML docs in this folder.
+  Do NOT guess the date and do NOT skip this step.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIRW Workflow — Flowcharts · Cotality Product Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { curve: 'basis', nodeSpacing: 28, rankSpacing: 36, htmlLabels: true } });
+</script>
+<style>
+  :root {
+    --bg: #fbfbfd; --surface: #ffffff; --surface-2: #f4f4f7;
+    --fg: #0f172a; --fg-strong: #020617; --muted: #64748b; --muted-strong: #475569;
+    --border: #e4e4ea; --border-strong: #d4d4dc;
+    --accent: #f59e0b; --accent-deep: #d97706; --accent-soft: #fff7ed;
+    --pm: #6366f1; --pm-deep: #4f46e5; --pm-soft: #eef2ff;
+    --human: #e11d48; --human-soft: #fff1f3;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-md: 0 4px 12px -2px rgba(15,23,42,0.06), 0 2px 6px -2px rgba(15,23,42,0.04);
+    --radius: 12px;
+    --hero-grad: linear-gradient(135deg, #f59e0b 0%, #ef4444 45%, #ec4899 100%);
+    --hero-grad-soft: radial-gradient(ellipse at top left, rgba(245,158,11,0.12), transparent 50%),
+                      radial-gradient(ellipse at top right, rgba(236,72,153,0.08), transparent 50%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #08080b; --surface: #111118; --surface-2: #16161e;
+      --fg: #e4e4e7; --fg-strong: #fafafa; --muted: #9ca3af; --muted-strong: #cbd5e1;
+      --border: #27272f; --border-strong: #3a3a44;
+      --accent: #fbbf24; --accent-deep: #f59e0b; --accent-soft: rgba(251,191,36,0.08);
+      --pm: #818cf8; --pm-deep: #6366f1; --pm-soft: rgba(129,140,248,0.12);
+      --human: #fb7185; --human-soft: rgba(251,113,133,0.14);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3); --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.4);
+      --hero-grad: linear-gradient(135deg, #fbbf24 0%, #f87171 45%, #f472b6 100%);
+      --hero-grad-soft: radial-gradient(ellipse at top left, rgba(251,191,36,0.10), transparent 50%),
+                        radial-gradient(ellipse at top right, rgba(244,114,182,0.08), transparent 50%);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0; font-family: 'Inter', -apple-system, sans-serif; font-size: 16px;
+    line-height: 1.62; color: var(--fg); background: var(--bg);
+    background-image: var(--hero-grad-soft); background-repeat: no-repeat; background-size: 100% 600px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1100px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem) 5rem; }
+  .hero { padding: 3.5rem 0 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent-deep); background: var(--accent-soft);
+    padding: 0.35rem 0.75rem; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    margin-bottom: 1.1rem;
+  }
+  .hero-eyebrow::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+  @media (prefers-color-scheme: dark) { .hero-eyebrow { color: var(--accent); } }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.025em; margin: 0 0 1rem;
+    background: var(--hero-grad); -webkit-background-clip: text;
+    background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub { font-size: 1.05rem; line-height: 1.55; color: var(--muted-strong); max-width: 60ch; margin: 0; }
+  .last-updated {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+    color: var(--accent-deep); background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 999px;
+    margin-top: 1.2rem;
+  }
+  .last-updated::before { content: "⏱"; font-size: 0.9rem; }
+  @media (prefers-color-scheme: dark) { .last-updated { color: var(--accent); } }
+  .role {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+    padding: 0.18rem 0.55rem; border-radius: 999px; text-transform: uppercase;
+    border: 1px solid color-mix(in srgb, var(--pm) 25%, transparent);
+    background: var(--pm-soft); color: var(--pm); vertical-align: middle; margin-left: 0.4rem;
+  }
+  .role::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--pm); display: inline-block; }
+  h2 {
+    font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; color: var(--fg-strong);
+    margin: 3rem 0 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); position: relative;
+  }
+  h2::before {
+    content: ""; position: absolute; bottom: -1px; left: 0;
+    width: 56px; height: 3px; border-radius: 2px; background: var(--hero-grad);
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.5rem 0 0.5rem; font-size: 0.85rem; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 0.3rem 0.7rem; border-radius: 999px; color: var(--muted-strong); font-weight: 500;
+    box-shadow: var(--shadow-sm);
+  }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; border: 2px solid; }
+  .sw-pm   { background: #e0e7ff; border-color: #6366f1; }
+  .sw-sync { background: #fef3c7; border-color: #f59e0b; }
+  .sw-human{ background: #fff1f3; border-color: #e11d48; }
+  .sw-gate { background: #f8fafc; border-color: #94a3b8; }
+  @media (prefers-color-scheme: dark) {
+    .sw-pm   { background: rgba(99,102,241,0.2); border-color: #818cf8; }
+    .sw-sync { background: rgba(245,158,11,0.2); border-color: #fbbf24; }
+    .sw-human{ background: rgba(225,29,72,0.2);  border-color: #fb7185; }
+    .sw-gate { background: rgba(148,163,184,0.1); border-color: #64748b; }
+  }
+  .callout {
+    background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+    border-left: 4px solid var(--accent); padding: 0.9rem 1.2rem; border-radius: var(--radius);
+    margin: 1rem 0 1.5rem; font-size: 0.94rem; box-shadow: var(--shadow-sm);
+  }
+  code {
+    background: var(--surface-2); padding: 0.13rem 0.4rem; border-radius: 5px;
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 0.84em; font-weight: 500; color: var(--fg-strong);
+    word-break: break-word; border: 1px solid var(--border);
+  }
+  .diagram-wrap {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin: 1rem 0 2.5rem; box-shadow: var(--shadow-md); overflow: auto;
+  }
+  .mermaid { min-width: 800px; width: fit-content; margin: 0 auto; }
+  a { color: var(--pm-deep); text-decoration: none; font-weight: 500; transition: color 0.12s; }
+  a:hover { color: var(--pm); text-decoration: underline; text-underline-offset: 3px; }
+  @media (prefers-color-scheme: dark) { a { color: var(--pm); } }
+  strong { color: var(--fg-strong); font-weight: 600; }
+  .page-footer {
+    margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+    font-size: 0.85rem; color: var(--muted);
+  }
+  ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--fg-strong); }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hero">
+  <span class="hero-eyebrow">Cotality Product Team · AIRW Flowcharts</span>
+  <h1>AIRW Workflow — Flowcharts</h1>
+  <p class="hero-sub">Two diagrams: the end-to-end <strong>/pm-req-*</strong> command flow <span class="role">PM</span>, and the per-requirement state lifecycle.</p>
+  <div class="last-updated">Last updated: 2026-05-27</div>
+</header>
+
+<div class="legend">
+  <span class="chip"><i class="swatch sw-pm"></i> PM command / phase</span>
+  <span class="chip"><i class="swatch sw-sync"></i> Sync / dev team handoff</span>
+  <span class="chip"><i class="swatch sw-human"></i> Human gate / PM approval</span>
+  <span class="chip"><i class="swatch sw-gate"></i> Decision / quality check</span>
+</div>
+
+<h2 id="command-flow">Command flow</h2>
+
+<div class="callout">
+  Walks one Aha feature from identification through to dev-team-ready child requirements. Each phase gate is a PM approval pause — Claude does not advance until the PM says <strong>"approved"</strong>. The quality gate (<code>/pm-req-review</code>) runs after all requirements are written to Aha; must-fix findings send the PM back to revise.
+</div>
+
+<div class="diagram-wrap">
+<div class="mermaid">
+flowchart TD
+    Start([Aha feature identified]):::startend --> Step0
+
+    Step0["<div style='padding:4px 8px;max-width:240px'><div style='font-size:14px;font-weight:800;margin-bottom:4px'>/pm-req-new</div><div style='font-size:12px;font-weight:400'>PM provides feature ref (e.g. SYM-12345). Claude fetches feature from Aha and begins phase-by-phase process.</div></div>"]:::cmdPM
+
+    Step0 --> Ph1["<div style='padding:4px 8px;max-width:240px'><div style='font-size:13px;font-weight:700;margin-bottom:3px'>Phase 1 — Research &amp; Market Problem</div><div style='font-size:12px;font-weight:400'>Deep search of existing requirements + Aha context. Drafts market problem.</div></div>"]:::cmdPM
+    Ph1 --> Gate1[/"PM: approve or refine Market Problem"/]:::human
+    Gate1 --> Ph2["<div style='padding:4px 8px;max-width:240px'><div style='font-size:13px;font-weight:700;margin-bottom:3px'>Phase 2 — Current Workflow</div><div style='font-size:12px;font-weight:400'>Pain-point table: Step | User Action | Blocker | Impact</div></div>"]:::cmdPM
+    Ph2 --> Gate2[/"PM: approve or refine Current Workflow"/]:::human
+    Gate2 --> Ph3["<div style='padding:4px 8px;max-width:240px'><div style='font-size:13px;font-weight:700;margin-bottom:3px'>Phase 3 — Objectives</div><div style='font-size:12px;font-weight:400'>Bulleted list, each mapped to a Phase 2 blocker.</div></div>"]:::cmdPM
+    Ph3 --> Gate3[/"PM: approve or refine Objectives"/]:::human
+    Gate3 --> Ph4["<div style='padding:4px 8px;max-width:240px'><div style='font-size:13px;font-weight:700;margin-bottom:3px'>Phase 4 — Future Workflow</div><div style='font-size:12px;font-weight:400'>Future state table; each row resolves a Phase 2 blocker.</div></div>"]:::cmdPM
+    Ph4 --> Gate4[/"PM: approve or refine Future Workflow"/]:::human
+    Gate4 --> Ph5["<div style='padding:4px 8px;max-width:240px'><div style='font-size:13px;font-weight:700;margin-bottom:3px'>Phase 5 — Requirements</div><div style='font-size:12px;font-weight:400'>One per product per capability. Always checks Capture + Estimate Mobile for field workflows.</div></div>"]:::cmdPM
+    Ph5 --> Gate5{Clarifications needed?}:::gate
+    Gate5 -->|yes| Ph6["<div style='padding:4px 8px;max-width:200px'><div style='font-size:13px;font-weight:700;margin-bottom:3px'>Phase 6 — Resolve</div><div style='font-size:12px;font-weight:400'>One question at a time until all markers cleared.</div></div>"]:::cmdPM
+    Ph6 --> Gate5
+    Gate5 -->|no| Gate5b[/"PM: approve all requirements"/]:::human
+    Gate5b --> Ph7["<div style='padding:4px 8px;max-width:240px'><div style='font-size:13px;font-weight:700;margin-bottom:3px'>Phase 7 — Write to Aha</div><div style='font-size:12px;font-weight:400'>Sequential mcp__aha__create_requirement calls, one per requirement. Confirms each.</div></div>"]:::cmdPM
+    Ph7 --> Review
+
+    Review["<div style='padding:4px 8px;max-width:240px'><div style='font-size:14px;font-weight:800;margin-bottom:4px'>/pm-req-review</div><div style='font-size:12px;font-weight:400'>Fetches all requirements from Aha. Runs 5 checks: product coverage, contradictions, detail, unresolved markers, format.</div></div>"]:::cmdPM
+    Review --> ReviewPass{Clean?}:::gate
+    ReviewPass -->|must-fix found| Ph5
+    ReviewPass -->|clean| Handoff
+
+    Handoff["<div style='padding:4px 8px;max-width:240px'><div style='font-size:13px;font-weight:700;margin-bottom:4px'>Dev team handoff</div><div style='font-size:12px;font-weight:400'>Requirements ready in Aha. Dev team picks up with /sym-spec-new.</div></div>"]:::sync
+    Handoff --> Done([Requirements shipped to dev team]):::startend
+
+    classDef cmdPM   fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b,font-size:14px,font-weight:bold
+    classDef sync    fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-size:14px,font-weight:bold
+    classDef human   fill:#fff1f3,stroke:#e11d48,stroke-width:1px,color:#9f1239,font-size:11px,font-style:italic
+    classDef gate    fill:#ffffff,stroke:#94a3b8,stroke-width:1px,color:#475569,font-size:11px
+    classDef startend fill:#0f172a,stroke:#020617,stroke-width:2px,color:#ffffff,font-size:12px
+</div>
+</div>
+
+<h2 id="req-lifecycle">Requirement lifecycle</h2>
+
+<div class="callout">
+  The states a <em>single requirement</em> moves through, from initial draft inside <code>/pm-req-new</code> through to dev-team-ready in Aha. Different requirements for the same feature can sit in different states simultaneously.
+</div>
+
+<div class="diagram-wrap">
+<div class="mermaid">
+flowchart TD
+    Drafted["<div style='padding:4px 6px;max-width:200px'><div style='font-size:13px;font-weight:800;margin-bottom:3px'>drafted</div><div style='font-size:11px;font-weight:400'>Requirement exists in Phase 5 response. Not yet in Aha.</div></div>"]:::statePM
+    Clarifying["<div style='padding:4px 6px;max-width:200px'><div style='font-size:13px;font-weight:800;margin-bottom:3px'>needs clarification</div><div style='font-size:11px;font-weight:400'>One or more [NEEDS CLARIFICATION] markers present in Details.</div></div>"]:::statePM
+    Resolved["<div style='padding:4px 6px;max-width:200px'><div style='font-size:13px;font-weight:800;margin-bottom:3px'>resolved</div><div style='font-size:11px;font-weight:400'>All markers removed. PM approves requirement.</div></div>"]:::statePM
+    Written["<div style='padding:4px 6px;max-width:200px'><div style='font-size:13px;font-weight:800;margin-bottom:3px'>written to Aha</div><div style='font-size:11px;font-weight:400'>mcp__aha__create_requirement succeeded. Requirement exists in Aha.</div></div>"]:::stateSync
+    Reviewed["<div style='padding:4px 6px;max-width:200px'><div style='font-size:13px;font-weight:800;margin-bottom:3px'>reviewed</div><div style='font-size:11px;font-weight:400'>/pm-req-review: all 5 checks passed. No must-fix findings.</div></div>"]:::stateGate
+    DevReady["<div style='padding:4px 6px;max-width:200px'><div style='font-size:13px;font-weight:800;margin-bottom:3px'>dev-team ready</div><div style='font-size:11px;font-weight:400'>Ready for /sym-spec-new pickup by the dev team.</div></div>"]:::stateDone
+
+    Drafted --> Clarifying
+    Clarifying -->|Phase 6: one Q at a time| Resolved
+    Resolved -->|PM approves all reqs| Written
+    Written -->|/pm-req-review| Reviewed
+    Reviewed -->|must-fix found| Drafted
+    Reviewed -->|all checks pass| DevReady
+
+    classDef statePM   fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b,font-size:13px,font-weight:bold
+    classDef stateSync fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-size:13px,font-weight:bold
+    classDef stateGate fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-size:13px,font-weight:bold
+    classDef stateDone fill:#0f172a,stroke:#020617,stroke-width:2px,color:#ffffff,font-size:13px,font-weight:bold
+</div>
+</div>
+
+<footer class="page-footer">
+  <strong>Companion docs:</strong>
+  <a href="pm-requirements-workflow.html">Framework reference</a> &middot;
+  <a href="pm-requirements-example.html">End-to-end example (SYM-2566)</a> &middot;
+  <a href="../Dev team Process/spec-driven-development.html">Dev team: spec-driven development</a>
+</footer>
+
+</div>
+</body>
+</html>
