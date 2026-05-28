@@ -344,27 +344,161 @@
 
 <!-- SECTION 1 -->
 <h2 id="output">1. What this process produces</h2>
-<p><em>Content coming soon.</em></p>
+<div class="tldr">
+  <h3>The output</h3>
+  <ul>
+    <li>One or more <strong>Aha child requirements</strong> under the parent feature — structured, dev-team-ready, already written to Aha via MCP.</li>
+    <li>Each requirement covers exactly one product and one capability. Multi-product features produce multiple requirements.</li>
+    <li>Requirements pass a 5-check quality gate (<code>/pm-req-review</code>) before handoff. No unresolved questions, no missing products, no format gaps.</li>
+  </ul>
+</div>
+
+<h3>Quality dimensions</h3>
+<p>Every requirement targets <strong>Level 4 (Proficient)</strong> or <strong>Level 5 (Exemplary)</strong> on three dimensions:</p>
+<table>
+  <thead>
+    <tr><th>Dimension</th><th>Level 4 — Proficient</th><th>Level 5 — Exemplary</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Clarity</strong></td>
+      <td>Active voice, consistent terminology aligned with CLAUDE.md. No vague verbs, no "TBD" placeholders.</td>
+      <td>Zero room for misinterpretation. A developer reading it cannot make two different valid implementations.</td>
+    </tr>
+    <tr>
+      <td><strong>Completeness</strong></td>
+      <td>Covers all primary requirements and functional states.</td>
+      <td>Also covers error states, edge cases, and offline behavior for mobile products.</td>
+    </tr>
+    <tr>
+      <td><strong>Traceability</strong></td>
+      <td>Market Problem is linked to a business goal and client value.</td>
+      <td>Every requirement detail traces back to a specific blocker in the Current Workflow table.</td>
+    </tr>
+  </tbody>
+</table>
 
 <!-- SECTION 2 -->
 <h2 id="overview">2. The 8-stage workflow</h2>
-<p><em>Content coming soon.</em></p>
+<p>The AIRW runs across two commands. <code>/pm-req-new</code> drives Stages 1–7 in a strictly sequential, phase-by-phase loop. <code>/pm-req-review</code> is Stage 8 — the quality gate run after all requirements are written to Aha.</p>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Stage</th><th>Who acts</th><th>Claude's role</th><th>Artifact produced</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Research &amp; Context</td><td>Claude</td><td>Searches repo + Aha for related requirements; fetches feature</td><td>Top 2–3 related features list</td></tr>
+    <tr><td>2</td><td>Market Problem</td><td>Claude drafts, PM approves</td><td>Drafts problem statement from feature + search findings</td><td>Background &amp; Market Problem prose</td></tr>
+    <tr><td>3</td><td>Current Workflow</td><td>Claude drafts, PM approves</td><td>Models today's pain points in a structured table</td><td>Current Workflow table (Step / User Action / Blocker / Impact)</td></tr>
+    <tr><td>4</td><td>Objectives</td><td>Claude drafts, PM approves</td><td>Derives objectives from Phase 2 blockers</td><td>Bulleted objective list</td></tr>
+    <tr><td>5</td><td>Future Workflow</td><td>Claude drafts, PM approves</td><td>Models the to-be state resolving each current blocker</td><td>Future Workflow table (Step / User Action / New Capability / System Response)</td></tr>
+    <tr><td>6</td><td>Requirements</td><td>Claude drafts, PM approves</td><td>Writes one requirement per product per capability; flags gaps inline</td><td>Full set of child requirements (in-session)</td></tr>
+    <tr><td>7</td><td>Submit to Aha</td><td>Claude (after PM approval)</td><td>Calls <code>mcp__aha__create_requirement</code> sequentially for each requirement</td><td>Requirements written to Aha under the parent feature</td></tr>
+    <tr><td>8</td><td>Quality Gate</td><td>Claude, PM acts on findings</td><td>Runs 5 checks; reports must-fix and should-fix issues</td><td>Review report; clean requirements</td></tr>
+  </tbody>
+</table>
+
+<div class="warn">
+  <strong>One phase at a time.</strong> Claude pauses at the end of each phase and waits for the PM to say <strong>"approved"</strong> before advancing. Do not ask Claude to skip phases or generate the full document at once — each pause is a quality checkpoint.
+</div>
 
 <!-- SECTION 3 -->
 <h2 id="stage1">3. Stage 1 — Research &amp; Context</h2>
-<p><em>Content coming soon.</em></p>
+<p><span class="phase-badge">Phase 0 + 1a</span> This stage happens before any drafting. Claude fetches the feature from Aha and searches the existing repository for related work.</p>
+
+<h3>Step 0 — Get the feature reference</h3>
+<p>Invoke <code>/pm-req-new</code> and provide the Aha feature reference (e.g., <code>SYM-12345</code>). Claude calls <code>mcp__aha__get_record</code> to retrieve:</p>
+<ul>
+  <li>Feature title and full description</li>
+  <li>Any promoted idea content or customer context attached to the feature</li>
+  <li>Existing child requirements (if any — for context, not to replace)</li>
+</ul>
+
+<h3>Step 1a — Deep search</h3>
+<p>Claude then searches the repository before drafting anything:</p>
+<ul>
+  <li>Calls <code>mcp__aha__search_documents</code> with 2–3 key terms from the feature title to find related existing requirements.</li>
+  <li>Uses the Glob tool on <code>docs/**/*</code> to identify any documentation files relevant to the subject area.</li>
+</ul>
+
+<h3>Step 1b — Report findings</h3>
+<p>Claude lists the <strong>top 2–3 most closely related existing features or documents</strong> before drafting the Market Problem. If nothing overlaps, it explicitly states: <em>"No overlapping features or workflows found."</em></p>
+<div class="info">
+  <strong>Why this matters:</strong> Related features reveal existing product patterns, previous decisions, and constraints that the new requirements must respect. Reading them prevents contradictions at the review stage.
+</div>
 
 <!-- SECTION 4 -->
 <h2 id="stage2">4. Stage 2 — Market Problem</h2>
-<p><em>Content coming soon.</em></p>
+<p><span class="phase-badge">Phase 1b + 1c</span> Claude drafts the Background &amp; Market Problem section using the Aha feature description and the search findings from Stage 1.</p>
+
+<h3>What a good market problem looks like</h3>
+<p>The market problem must satisfy three criteria:</p>
+<ol>
+  <li><strong>Identifies who is affected and how</strong> — name the specific user role (use sub-types from CLAUDE.md, not just "adjuster"). Describe the concrete impact on their work.</li>
+  <li><strong>Evidences the pain</strong> — cite specifics from the feature description, customer quotes, or prior Aha content. Avoid vague claims like "users find it difficult."</li>
+  <li><strong>Connects to a business goal</strong> — tie the problem to a carrier outcome (reduced LAE, faster cycle time, lower leakage, higher adoption) or a strategic objective.</li>
+</ol>
+
+<div class="human-callout">
+  <strong>PM approval gate</strong>
+  After presenting the Market Problem draft, Claude pauses. The PM refines or approves. Approved Market Problem is the foundation every later phase references back to — invest time here.
+</div>
 
 <!-- SECTION 5 -->
 <h2 id="stage3">5. Stage 3 — Current Workflow</h2>
-<p><em>Content coming soon.</em></p>
+<p><span class="phase-badge">Phase 2</span> Claude models today's workflow — showing exactly where it breaks down. This table becomes the traceability backbone: every Objective (Stage 4) and every Future Workflow row (Stage 5) must map back to a blocker row here.</p>
+
+<h3>Table structure</h3>
+<table>
+  <thead>
+    <tr><th>Step</th><th>User Action</th><th>Blocker</th><th>Impact</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>What the user does at this point in the workflow</td>
+      <td>Where the current system or process fails them</td>
+      <td>Concrete downstream cost: time lost, error introduced, LAE increase, etc.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>…</td>
+      <td>…</td>
+      <td>…</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>How to validate it</h3>
+<p>A well-formed Current Workflow table:</p>
+<ul>
+  <li>Uses specific user role names from CLAUDE.md (e.g., "Adjuster — Field (Experienced)" rather than "adjuster")</li>
+  <li>Has at least one row per distinct pain point — do not merge unrelated blockers into a single row</li>
+  <li>Connects each Impact to a real consequence (use LAE, leakage, cycle time, or explicit user friction)</li>
+  <li>Contains enough rows that the Objectives in Stage 4 can each be traced to exactly one blocker</li>
+</ul>
+
+<div class="human-callout">
+  <strong>PM approval gate</strong>
+  Claude pauses after presenting the table. The PM corrects any mischaracterization of the current workflow before continuing. This table is not changed again after approval.
+</div>
 
 <!-- SECTION 6 -->
 <h2 id="stage4">6. Stage 4 — Objectives</h2>
-<p><em>Content coming soon.</em></p>
+<p><span class="phase-badge">Phase 3</span> Claude derives the Objectives from the Current Workflow blockers. Each bullet must be traceable to a specific row in the Phase 2 table.</p>
+
+<h3>Objective bullet rules</h3>
+<ul>
+  <li><strong>Specific and actionable</strong> — "Enable field adjusters to scan a room and generate a floor plan in under 60 seconds" passes. "Improve the sketching experience" fails.</li>
+  <li><strong>No "improve" or "enhance" without qualification</strong> — state what "better" means in measurable or unambiguous terms.</li>
+  <li><strong>One objective per blocker</strong> — if Phase 2 has 4 blocker rows, Stage 4 should have approximately 4 objectives. Merging multiple blockers into one objective hides scope.</li>
+  <li><strong>Level 4/5 traceability</strong> — the objective must make the Phase 2 blocker it resolves obvious to a reader who hasn't seen the conversation.</li>
+</ul>
+
+<div class="human-callout">
+  <strong>PM approval gate</strong>
+  Claude pauses after presenting the objectives list. This is a good moment to question scope: if an objective would require a separate multi-month project, flag it for de-scoping before requirements are drafted.
+</div>
 
 <!-- SECTION 7 -->
 <h2 id="stage5">7. Stage 5 — Future Workflow</h2>
