@@ -502,27 +502,279 @@
 
 <!-- SECTION 7 -->
 <h2 id="stage5">7. Stage 5 — Future Workflow</h2>
-<p><em>Content coming soon.</em></p>
+<p><span class="phase-badge">Phase 4</span> Claude drafts the Future Workflow table — the to-be state that resolves the blockers identified in Stage 3.</p>
+
+<h3>Table structure</h3>
+<table>
+  <thead>
+    <tr><th>Step</th><th>User Action</th><th>New Feature / Capability</th><th>System Response</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>What the user does (same action as Phase 2, now frictionless)</td>
+      <td>The new product capability enabling this step</td>
+      <td>What the system does automatically in response</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>…</td>
+      <td>…</td>
+      <td>…</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Traceability check</h3>
+<p>Every row in the Future Workflow table must resolve a specific row in the Current Workflow table. If the Current Workflow had 4 blockers, the Future Workflow should have 4 corresponding rows (though one new capability may resolve multiple blockers — that's acceptable if documented clearly).</p>
+
+<div class="human-callout">
+  <strong>PM approval gate</strong>
+  Claude pauses. The PM validates that the future state described is what was actually intended — this is the last checkpoint before requirements are written. Changes to the Future Workflow after approval require revising the requirements.
+</div>
 
 <!-- SECTION 8 -->
 <h2 id="stage6">8. Stage 6 — Requirements</h2>
-<p><em>Content coming soon.</em></p>
+<p><span class="phase-badge">Phase 5 + 6</span> The central deliverable. Claude writes one requirement per product per capability. This section is the most rule-dense part of the process.</p>
+
+<h3>Product-split rule</h3>
+<div class="warn">
+  <strong>One requirement per product.</strong> If a capability affects Claims Workspace, Capture, and Estimate Mobile, that is <em>three separate requirements</em>. Never combine two products in one requirement — the dev team consumes these as independent work items, often by different squads.
+</div>
+
+<h3>Field/mobile check (always apply)</h3>
+<p>For any feature touching field workflows, mobile data capture, or offline scenarios: always evaluate whether <strong>Capture (Android)</strong> and <strong>Estimate Mobile (iOS)</strong> are affected, even if not mentioned in the feature description. Claude checks this automatically — but the PM should verify the result.</p>
+
+<h3>Exact requirement format</h3>
+<pre><code><strong>Applies to:</strong> [Product name — must match a product name in CLAUDE.md]
+<strong>Statement:</strong> As a [user role], I want to [specific action] so that [specific benefit].
+<strong>Details:</strong>
+1. [Concrete system behavior — what the system does, not just what the user sees]
+2. [Another specific behavior]
+3. [Edge case, error state, or constraint]
+<strong>Example:</strong> [A concrete scenario showing how this requirement works in practice]</code></pre>
+
+<ul>
+  <li><strong>Applies to:</strong> must be an exact product name from CLAUDE.md — no abbreviations, no "mobile" as a product name.</li>
+  <li><strong>Statement:</strong> user story format; use persona sub-types (e.g., "Adjuster — Field (Experienced)", not "adjuster").</li>
+  <li><strong>Details:</strong> numbered list; each item is a concrete behavior or constraint. Not a rephrasing of the Statement.</li>
+  <li><strong>Example:</strong> a realistic scenario that disambiguates any implementation ambiguity in the Details.</li>
+</ul>
+
+<h3>The <code>[NEEDS CLARIFICATION]</code> marker</h3>
+<p>When Claude cannot determine the correct behavior for a specific product, it writes <code>[NEEDS CLARIFICATION: specific question]</code> inline in the Details section. Rules:</p>
+<ul>
+  <li>Claude asks one clarification question at a time (Phase 6), in the order they appear.</li>
+  <li><strong>Gating:</strong> no requirement with an unresolved marker is written to Aha. The clarification loop (Phase 6) must complete before Phase 7 begins.</li>
+  <li><code>/pm-req-review</code> Check D will catch any marker that slips through — this is a must-fix finding.</li>
+</ul>
+
+<h3>Numbered presentation</h3>
+<p>Claude presents all requirements as a numbered list (1 of N, 2 of N, etc.) so the PM can refer to specific items by number when requesting revisions.</p>
+
+<div class="human-callout">
+  <strong>PM approval gate</strong>
+  After all clarifications are resolved, Claude re-presents the full requirements set. The PM reviews and approves before anything is written to Aha. This is the final edit opportunity.
+</div>
 
 <!-- SECTION 9 -->
 <h2 id="stage7">9. Stage 7 — Submit to Aha</h2>
-<p><em>Content coming soon.</em></p>
+<p><span class="phase-badge">Phase 7</span> Once the PM says "approved," Claude writes every requirement to Aha sequentially using <code>mcp__aha__create_requirement</code>.</p>
+
+<h3>Write sequence</h3>
+<p>Claude calls <code>mcp__aha__create_requirement</code> once per requirement, <strong>in sequence</strong> (not in parallel):</p>
+<ul>
+  <li><code>feature_id</code>: the Aha feature reference (e.g., <code>SYM-12345</code>)</li>
+  <li><code>name</code>: the product name from the "Applies to" line (e.g., <code>Claims Workspace</code>)</li>
+  <li><code>description</code>: the full requirement text starting from <strong>Applies to:</strong></li>
+</ul>
+<p>Claude confirms each write succeeds before calling the next. If a write fails, it stops and reports the error — do not continue writing until the failure is resolved.</p>
+
+<h3>Confirmation message</h3>
+<p>After all requirements are written, Claude reports:</p>
+<blockquote>✓ [N] requirements written to [feature reference]. Run /pm-req-review to quality-check before handing off to the dev team.</blockquote>
 
 <!-- SECTION 10 -->
 <h2 id="quality">10. Quality Gate</h2>
-<p><em>Content coming soon.</em></p>
+<p>Run <code>/pm-req-review SYM-12345</code> after all requirements are written to Aha. Claude fetches every child requirement and runs five checks.</p>
+
+<h3>The five checks</h3>
+<table>
+  <thead>
+    <tr><th>Check</th><th>What Claude evaluates</th><th>Finding level</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A — Product coverage</strong></td>
+      <td>Based on the feature description and CLAUDE.md product knowledge: which products should be affected? Is there a requirement for each?</td>
+      <td><strong>must-fix</strong> if a product is missing</td>
+    </tr>
+    <tr>
+      <td><strong>B — No contradictions</strong></td>
+      <td>Do any two requirements contradict each other? (e.g., one says only adjusters can see a feature; another implies managers see it too)</td>
+      <td><strong>must-fix</strong> if found</td>
+    </tr>
+    <tr>
+      <td><strong>C — Sufficient detail</strong></td>
+      <td>Is each requirement specific enough that a developer can implement it without asking the PM for clarification? Vague status labels, missing error states, undefined personas — all fail this check.</td>
+      <td><strong>should-fix</strong></td>
+    </tr>
+    <tr>
+      <td><strong>D — No unresolved markers</strong></td>
+      <td>Does any requirement still contain a <code>[NEEDS CLARIFICATION: ...]</code> marker?</td>
+      <td><strong>must-fix</strong> if found</td>
+    </tr>
+    <tr>
+      <td><strong>E — Format compliance</strong></td>
+      <td>Does each requirement follow the exact format: Applies to / Statement (user story) / Details (numbered list)?</td>
+      <td><strong>should-fix</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Re-run cycle</h3>
+<p>If must-fix findings are reported:</p>
+<ol>
+  <li>Fix each must-fix item (update the requirement in Aha or add a missing requirement).</li>
+  <li>Run <code>/pm-req-review</code> again.</li>
+  <li>Repeat until the review reports clean.</li>
+</ol>
+<p>Should-fix items are recommended but do not block handoff. Fix them if time allows.</p>
+
+<div class="info">
+  <strong>Clean review = handoff ready.</strong> Once <code>/pm-req-review</code> reports "✓ All N requirements passed," the feature is ready for the dev team to pick up with <code>/sym-spec-new</code>.
+</div>
 
 <!-- SECTION 11 -->
 <h2 id="conventions">11. Conventions &amp; markers</h2>
-<p><em>Content coming soon.</em></p>
+<h3>Product names</h3>
+<p>Always use the exact product names from CLAUDE.md. These are the valid values for "Applies to":</p>
+<ul>
+  <li>Claims Workspace</li>
+  <li>Claims Estimate</li>
+  <li>Estimate Mobile (iOS)</li>
+  <li>Link</li>
+  <li>Capture</li>
+  <li>Workspace Questionnaires</li>
+  <li>Engage Video</li>
+</ul>
+<p>Legacy names (<em>Claims Connect, Mobile Claims, Desk Adjuster, Video Connect</em>) must not appear in requirements. Use the current names above.</p>
+
+<h3>Persona sub-types</h3>
+<p>The Statement's user role must use a specific sub-type, not just "adjuster." Valid roles from CLAUDE.md:</p>
+<ul>
+  <li>Adjuster — Field (Experienced) / Adjuster — Field (Novice) / Adjuster — Inside/Desk / Adjuster — Large Loss</li>
+  <li>Field Tech · Claims Supervisor · Claims Manager · VP, Claims · IA Manager</li>
+  <li>Contractor / Restoration Estimator · Insured</li>
+</ul>
+
+<h3><code>[NEEDS CLARIFICATION]</code> rules</h3>
+<ul>
+  <li>Written as <code>[NEEDS CLARIFICATION: the specific question]</code> inline inside the Details block.</li>
+  <li><strong>Gating:</strong> Claude will not write a requirement containing this marker to Aha. Phase 6 must resolve all markers first.</li>
+  <li><code>/pm-req-review</code> Check D treats any surviving marker as a must-fix finding.</li>
+  <li>Ask one question at a time — Claude resolves markers sequentially, updating each requirement before asking the next question.</li>
+</ul>
+
+<h3>Always-applicable constraints from CLAUDE.md</h3>
+<table>
+  <thead>
+    <tr><th>Constraint</th><th>What it means for requirements</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Single source of truth</strong></td>
+      <td>No requirement may introduce a workflow where data lives only in one product without syncing to Claims Workspace.</td>
+    </tr>
+    <tr>
+      <td><strong>Data integrity end-to-end</strong></td>
+      <td>Data captured in Capture or Estimate Mobile must flow to Claims Estimate and Claims Workspace without manual re-entry. Requirements must not contradict this.</td>
+    </tr>
+    <tr>
+      <td><strong>Offline behavior for mobile</strong></td>
+      <td>Every Capture and Estimate Mobile requirement must explicitly state how the feature behaves when there is no network connectivity.</td>
+    </tr>
+    <tr>
+      <td><strong>Leakage prevention</strong></td>
+      <td>Every estimating or scoping requirement must note whether it reduces variance or missed scope — the primary leakage sources.</td>
+    </tr>
+  </tbody>
+</table>
 
 <!-- SECTION 12 -->
 <h2 id="quickref">12. Quick-reference card</h2>
-<p><em>Content coming soon.</em></p>
+<p>Keep this open in a second tab during active use.</p>
+
+<table>
+  <thead>
+    <tr><th>Stage</th><th>Name</th><th>PM action</th><th>Claude action</th><th>Gate condition to advance</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Start</td>
+      <td>Run <code>/pm-req-new SYM-12345</code></td>
+      <td>Fetches feature via <code>mcp__aha__get_record</code></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Research &amp; Context</td>
+      <td>Review related features list</td>
+      <td>Searches repo + Aha; lists top 2–3 related features</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Market Problem</td>
+      <td>Refine or say <strong>"approved"</strong></td>
+      <td>Drafts Background &amp; Market Problem</td>
+      <td>PM says "approved"</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Current Workflow</td>
+      <td>Validate pain points; refine or approve</td>
+      <td>Drafts pain-point table (Step / Action / Blocker / Impact)</td>
+      <td>PM says "approved"</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Objectives</td>
+      <td>Check traceability to blockers; approve</td>
+      <td>Derives objectives from Phase 2 blockers</td>
+      <td>PM says "approved"</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Future Workflow</td>
+      <td>Validate to-be state; approve</td>
+      <td>Drafts future-state table, each row resolving a blocker</td>
+      <td>PM says "approved"</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Requirements</td>
+      <td>Review all reqs; answer clarifications</td>
+      <td>Drafts reqs (one per product per capability); flags uncertainties with <code>[NEEDS CLARIFICATION]</code></td>
+      <td>All markers resolved; PM says "approved"</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Submit to Aha</td>
+      <td>Monitor confirmations</td>
+      <td>Sequential <code>mcp__aha__create_requirement</code> calls; confirms each</td>
+      <td>All N requirements confirmed written</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Quality Gate</td>
+      <td>Fix must-fix items; re-run until clean</td>
+      <td>Runs 5 checks; reports must-fix / should-fix findings</td>
+      <td>Review reports "✓ All N requirements passed"</td>
+    </tr>
+  </tbody>
+</table>
 
 <hr>
 <p class="page-footer">
