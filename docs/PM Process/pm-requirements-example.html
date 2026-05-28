@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<!--
+  AI EDITOR INSTRUCTION (Claude Code, Copilot, any AI assistant):
+  This file carries a `Last updated: YYYY-MM-DD` line in its header
+  (search for class="last-updated"). EVERY time you modify this file:
+    1. Run `date "+%Y-%m-%d"` to get the current date.
+    2. Update the `Last updated:` value to that exact string before finishing.
+    3. Keep the format identical across all AIRW HTML docs in this folder.
+  Do NOT guess the date and do NOT skip this step.
+
+  COMPANION DOCS (keep in sync):
+  `pm-requirements-workflow.html` describes the AIRW process this file illustrates.
+  `pm-requirements-flowchart.html` shows the same workflow as a Mermaid diagram.
+  If the workflow shape changes (phases, gates, loop conditions), update all three.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>End-to-End Example: SYM-2566 · Cotality Product Team AIRW</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfbfd; --surface: #ffffff; --surface-2: #f4f4f7; --surface-3: #ebebf0;
+    --fg: #0f172a; --fg-strong: #020617; --muted: #64748b; --muted-strong: #475569;
+    --border: #e4e4ea; --border-strong: #d4d4dc;
+    --accent: #f59e0b; --accent-deep: #d97706; --accent-soft: #fff7ed;
+    --pm: #6366f1; --pm-deep: #4f46e5; --pm-soft: #eef2ff;
+    --human: #e11d48; --human-soft: #fff1f3;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-md: 0 4px 12px -2px rgba(15,23,42,0.06), 0 2px 6px -2px rgba(15,23,42,0.04);
+    --shadow-lg: 0 20px 40px -12px rgba(15,23,42,0.12), 0 8px 16px -4px rgba(15,23,42,0.06);
+    --radius: 12px; --radius-sm: 8px; --radius-lg: 18px;
+    --hero-grad: linear-gradient(135deg, #f59e0b 0%, #ef4444 45%, #ec4899 100%);
+    --hero-grad-soft: radial-gradient(ellipse at top left, rgba(245,158,11,0.12), transparent 50%),
+                      radial-gradient(ellipse at top right, rgba(236,72,153,0.08), transparent 50%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #08080b; --surface: #111118; --surface-2: #16161e; --surface-3: #1d1d27;
+      --fg: #e4e4e7; --fg-strong: #fafafa; --muted: #9ca3af; --muted-strong: #cbd5e1;
+      --border: #27272f; --border-strong: #3a3a44;
+      --accent: #fbbf24; --accent-deep: #f59e0b; --accent-soft: rgba(251,191,36,0.08);
+      --pm: #818cf8; --pm-deep: #6366f1; --pm-soft: rgba(129,140,248,0.12);
+      --human: #fb7185; --human-soft: rgba(251,113,133,0.14);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3); --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.4);
+      --shadow-lg: 0 20px 40px -12px rgba(0,0,0,0.6);
+      --hero-grad: linear-gradient(135deg, #fbbf24 0%, #f87171 45%, #f472b6 100%);
+      --hero-grad-soft: radial-gradient(ellipse at top left, rgba(251,191,36,0.10), transparent 50%),
+                        radial-gradient(ellipse at top right, rgba(244,114,182,0.08), transparent 50%);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px; line-height: 1.62; color: var(--fg); background: var(--bg);
+    background-image: var(--hero-grad-soft); background-repeat: no-repeat; background-size: 100% 800px;
+    -webkit-font-smoothing: antialiased; font-feature-settings: "cv02","cv03","cv04","cv11","ss01";
+  }
+  .page { max-width: 1280px; margin: 0 auto; padding: 0 clamp(1rem,3vw,2rem); }
+  .layout { display: grid; grid-template-columns: minmax(0,1fr); gap: 2.5rem; padding-bottom: 6rem; }
+  @media (min-width: 1080px) { .layout { grid-template-columns: 240px minmax(0,1fr); align-items: start; } }
+  main { min-width: 0; max-width: 820px; }
+  @media (min-width: 1080px) { main { padding-top: 1rem; } }
+
+  /* Hero */
+  .hero { padding: 3.5rem 0 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent-deep); background: var(--accent-soft);
+    padding: 0.35rem 0.75rem; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); margin-bottom: 1.1rem;
+  }
+  .hero-eyebrow::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+  @media (prefers-color-scheme: dark) { .hero-eyebrow { color: var(--accent); } }
+  h1 {
+    font-size: clamp(2rem,5vw,3.25rem); font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.025em; margin: 0 0 1rem;
+    background: var(--hero-grad); -webkit-background-clip: text;
+    background-clip: text; -webkit-text-fill-color: transparent; max-width: 20ch;
+  }
+  .hero-sub { font-size: 1.1rem; line-height: 1.55; color: var(--muted-strong); max-width: 60ch; margin: 0; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; font-size: 0.85rem; }
+  .hero-meta .chip {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 0.35rem 0.75rem; border-radius: 999px; color: var(--muted-strong); box-shadow: var(--shadow-sm);
+  }
+  .hero-meta .chip strong { color: var(--fg-strong); font-weight: 600; }
+  .last-updated {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+    color: var(--accent-deep); background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 999px;
+  }
+  .last-updated::before { content: "⏱"; font-size: 0.9rem; }
+  @media (prefers-color-scheme: dark) { .last-updated { color: var(--accent); } }
+
+  /* Typography */
+  h2 {
+    font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: var(--fg-strong);
+    margin: 3.5rem 0 1rem; padding-bottom: 0.65rem; border-bottom: 1px solid var(--border);
+    scroll-margin-top: 80px; position: relative;
+  }
+  h2::before {
+    content: ""; position: absolute; bottom: -1px; left: 0;
+    width: 56px; height: 3px; border-radius: 2px; background: var(--hero-grad);
+  }
+  h3 { font-size: 1.22rem; font-weight: 700; letter-spacing: -0.01em; color: var(--fg-strong); margin: 2.2rem 0 0.6rem; scroll-margin-top: 80px; }
+  h4 { font-size: 1.02rem; font-weight: 600; color: var(--pm-deep); margin: 1.4rem 0 0.4rem; }
+  @media (prefers-color-scheme: dark) { h4 { color: var(--pm); } }
+  p { margin: 1.1rem 0; }
+  ul, ol { padding-left: 1.4rem; margin: 1rem 0; }
+  li { margin: 0.6rem 0; line-height: 1.6; }
+  li::marker { color: var(--muted); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+  a { color: var(--pm-deep); text-decoration: none; font-weight: 500; transition: color 0.12s; }
+  a:hover { color: var(--pm); text-decoration: underline; text-underline-offset: 3px; }
+  @media (prefers-color-scheme: dark) { a { color: var(--pm); } }
+  strong { color: var(--fg-strong); font-weight: 600; }
+  a strong, a code { color: inherit; }
+  em { color: var(--muted-strong); }
+
+  /* Code */
+  code {
+    background: var(--surface-2); padding: 0.13rem 0.4rem; border-radius: 5px;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.84em; font-weight: 500; color: var(--fg-strong);
+    word-break: break-word; border: 1px solid var(--border);
+  }
+  pre {
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    padding: 1.1rem 1.2rem; border-radius: var(--radius); overflow-x: auto;
+    font-size: 0.82rem; line-height: 1.6; border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm); margin: 1rem 0;
+  }
+  pre code { background: transparent; padding: 0; font-size: inherit; border: none; color: var(--fg); }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: separate; border-spacing: 0; margin: 1.2rem 0;
+    font-size: 0.92rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  th, td { text-align: left; padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; color: var(--fg-strong); font-size: 0.82rem; letter-spacing: 0.02em; text-transform: uppercase; border-bottom: 1px solid var(--border-strong); }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover td { background: var(--surface-2); }
+  td:first-child { font-weight: 500; color: var(--fg-strong); }
+
+  /* Blockquote */
+  blockquote {
+    margin: 1rem 0; padding: 0.7rem 1.1rem;
+    border-left: 3px solid var(--accent); background: var(--surface-2);
+    color: var(--muted-strong); border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  /* Callouts */
+  .warn {
+    background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    border-left: 4px solid var(--accent); padding: 0.9rem 1.2rem; border-radius: var(--radius);
+    font-size: 0.94rem; margin: 1.2rem 0; box-shadow: var(--shadow-sm);
+  }
+  .warn strong:first-child { color: var(--accent-deep); }
+  @media (prefers-color-scheme: dark) { .warn strong:first-child { color: var(--accent); } }
+  .info {
+    background: var(--pm-soft); border: 1px solid color-mix(in srgb, var(--pm) 20%, transparent);
+    border-left: 4px solid var(--pm); padding: 0.9rem 1.2rem; border-radius: var(--radius);
+    font-size: 0.94rem; margin: 1.2rem 0; box-shadow: var(--shadow-sm);
+  }
+  .tldr {
+    background: linear-gradient(135deg, var(--accent-soft), transparent 65%), var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+    border-radius: var(--radius-lg); padding: 1.5rem 1.7rem; margin: 1.8rem 0 2rem;
+    box-shadow: var(--shadow-md); position: relative; overflow: hidden;
+  }
+  .tldr::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--hero-grad); }
+  .tldr h3 {
+    margin-top: 0; color: var(--accent-deep); font-size: 1.05rem;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    display: flex; align-items: center; gap: 0.55rem;
+  }
+  .tldr h3::before { content: "✦"; color: var(--accent); font-size: 1.2rem; }
+  @media (prefers-color-scheme: dark) { .tldr h3 { color: var(--accent); } }
+
+  /* Role badge */
+  .role {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+    padding: 0.18rem 0.55rem; border-radius: 999px; margin-left: 0.35rem;
+    vertical-align: middle; text-transform: uppercase; border: 1px solid transparent; line-height: 1;
+  }
+  .role-pm { background: var(--pm-soft); color: var(--pm); border-color: color-mix(in srgb, var(--pm) 25%, transparent); }
+  .role-pm::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--pm); }
+
+  /* Phase badge */
+  .phase-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.2rem 0.6rem; border-radius: 999px;
+    background: var(--pm-soft); color: var(--pm);
+    border: 1px solid color-mix(in srgb, var(--pm) 25%, transparent); margin-right: 0.4rem;
+  }
+
+  /* Human gate callout */
+  .human-callout {
+    background: var(--human-soft); border: 1px solid color-mix(in srgb, var(--human) 18%, transparent);
+    border-left: 4px solid var(--human); border-radius: var(--radius);
+    padding: 0.85rem 1rem 0.85rem 3rem; margin: 1rem 0; font-size: 0.93rem; position: relative;
+  }
+  .human-callout::before { content: "👤"; position: absolute; left: 0.85rem; top: 0.75rem; font-size: 1.4rem; }
+  .human-callout strong:first-child {
+    color: var(--human); text-transform: uppercase; letter-spacing: 0.05em;
+    font-size: 0.78rem; display: block; margin-bottom: 0.25rem;
+  }
+
+  /* Sidebar TOC */
+  .sidebar {
+    position: sticky; top: 1.5rem; align-self: start;
+    max-height: calc(100vh - 3rem); overflow-y: auto; padding: 1rem 0; font-size: 0.88rem;
+  }
+  @media (max-width: 1079px) { .sidebar { display: none; } }
+  .sidebar-title {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.8rem; padding-left: 0.8rem;
+  }
+  .sidebar-nav ol { list-style: none; padding: 0; margin: 0; counter-reset: tocsec; }
+  .sidebar-nav li { counter-increment: tocsec; margin: 0; }
+  .sidebar-nav a {
+    display: block; padding: 0.45rem 0.8rem; color: var(--muted-strong);
+    border-left: 2px solid transparent; border-radius: 0 6px 6px 0;
+    font-weight: 500; transition: all 0.12s; line-height: 1.4;
+  }
+  .sidebar-nav a::before {
+    content: counter(tocsec) "."; display: inline-block; width: 1.5rem;
+    color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 500;
+  }
+  .sidebar-nav a:hover { color: var(--fg-strong); background: var(--surface-2); text-decoration: none; border-left-color: var(--border-strong); }
+  .sidebar-nav a.active { color: var(--accent-deep); background: var(--accent-soft); border-left-color: var(--accent); font-weight: 600; }
+  .sidebar-nav a.active::before { color: var(--accent-deep); }
+  @media (prefers-color-scheme: dark) {
+    .sidebar-nav a.active { color: var(--accent); }
+    .sidebar-nav a.active::before { color: var(--accent); }
+  }
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  /* Mobile TOC card */
+  .toc {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.1rem 1.4rem; margin: 1.5rem 0 2.5rem; font-size: 0.95rem; box-shadow: var(--shadow-sm);
+  }
+  .toc strong { display: block; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+  .toc ol { margin: 0; padding-left: 1.2rem; }
+  .toc li { margin: 0.25rem 0; }
+  .toc a { color: var(--fg); font-weight: 500; }
+  .toc a:hover { color: var(--accent-deep); }
+  @media (min-width: 1080px) { .toc { display: none; } }
+
+  /* Back to top */
+  .back-to-top {
+    position: fixed; right: 1.5rem; bottom: 1.5rem; width: 44px; height: 44px;
+    border-radius: 50%; background: var(--surface); border: 1px solid var(--border-strong);
+    color: var(--accent-deep); font-size: 1.2rem; font-weight: 700; cursor: pointer;
+    box-shadow: var(--shadow-md); opacity: 0; transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s, background 0.12s; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .back-to-top.visible { opacity: 1; transform: translateY(0); }
+  .back-to-top:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  @media (prefers-color-scheme: dark) {
+    .back-to-top { color: var(--accent); }
+    .back-to-top:hover { color: var(--bg); }
+  }
+
+  /* Page footer */
+  .page-footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--muted); }
+  ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--fg-strong); }
+
+  /* Phase section card */
+  .phase-section {
+    margin: 2.5rem 0 0; padding: 1.5rem 1.7rem; border-radius: var(--radius-lg);
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    position: relative; overflow: hidden;
+  }
+  .phase-section::before {
+    content: ""; position: absolute; top: 0; left: 0;
+    width: 100%; height: 3px; background: var(--hero-grad);
+  }
+  .phase-section-title {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  /* Requirement card */
+  .req-card {
+    margin: 1.5rem 0; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .req-card-header {
+    background: var(--pm-soft); border-bottom: 1px solid color-mix(in srgb, var(--pm) 15%, var(--border));
+    padding: 0.65rem 1.1rem; display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.82rem; font-weight: 700; color: var(--pm);
+  }
+  .req-card-body { padding: 1rem 1.2rem; font-size: 0.93rem; }
+  .req-card-body p { margin: 0.4rem 0; }
+  .req-card-body ol { margin: 0.4rem 0 0.4rem 1.2rem; }
+  .req-card-body li { margin: 0.3rem 0; }
+
+  /* Source card (Aha feature) */
+  .source-card {
+    background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-lg);
+    padding: 1.5rem 1.7rem; margin: 1.5rem 0; box-shadow: var(--shadow-md);
+  }
+  .source-card-label {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .source-card-label::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0;
+  }
+  .source-card h3 { margin-top: 0; font-size: 1.15rem; }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="layout">
+
+<aside class="sidebar" aria-label="Table of contents">
+  <div class="sidebar-title">On this page</div>
+  <nav class="sidebar-nav">
+    <ol>
+      <li><a href="#feature">Feature context</a></li>
+      <li><a href="#phase1">Phase 1 — Research &amp; Market Problem</a></li>
+      <li><a href="#phase2">Phase 2 — Current Workflow</a></li>
+      <li><a href="#phase3">Phase 3 — Objectives</a></li>
+      <li><a href="#phase4">Phase 4 — Future Workflow</a></li>
+      <li><a href="#phase5">Phase 5 — Requirements (drafted)</a></li>
+      <li><a href="#phase7">Phase 7 — Written to Aha</a></li>
+      <li><a href="#review">Quality Gate — /pm-req-review</a></li>
+      <li><a href="#final">Final requirements</a></li>
+    </ol>
+  </nav>
+</aside>
+
+<main>
+
+<header class="hero">
+  <span class="hero-eyebrow">Cotality Product Team · AIRW End-to-End Example</span>
+  <h1>End-to-end example: SYM-2566</h1>
+  <p class="hero-sub">92970 — Change wall thickness per wall — Implement. A complete walkthrough of the AI-First Requirements Workflow from raw Aha feature to dev-team-ready child requirements. <span class="role role-pm">PM</span></p>
+  <div class="hero-meta">
+    <span class="chip"><strong>SYM-2566</strong> · Change wall thickness per wall</span>
+    <span class="chip"><strong>2</strong> child requirements</span>
+    <span class="chip"><strong>Claims Estimate</strong> · <strong>Estimate Mobile (iOS)</strong></span>
+    <span class="last-updated">Last updated: 2026-05-27</span>
+  </div>
+</header>
+
+<!-- Mobile TOC -->
+<nav class="toc" aria-label="Page contents">
+  <strong>On this page</strong>
+  <ol>
+    <li><a href="#feature">Feature context</a></li>
+    <li><a href="#phase1">Phase 1 — Research &amp; Market Problem</a></li>
+    <li><a href="#phase2">Phase 2 — Current Workflow</a></li>
+    <li><a href="#phase3">Phase 3 — Objectives</a></li>
+    <li><a href="#phase4">Phase 4 — Future Workflow</a></li>
+    <li><a href="#phase5">Phase 5 — Requirements (drafted)</a></li>
+    <li><a href="#phase7">Phase 7 — Written to Aha</a></li>
+    <li><a href="#review">Quality Gate — /pm-req-review</a></li>
+    <li><a href="#final">Final requirements</a></li>
+  </ol>
+</nav>
+
+<!-- FEATURE CONTEXT -->
+<h2 id="feature">Feature context</h2>
+<p>The walkthrough begins with the PM invoking <code>/pm-req-new SYM-2566</code>. Claude calls <code>mcp__aha__get_record</code> to retrieve the feature from Aha. What follows is the complete feature as it exists in Aha at the time of the session — the raw material that drives every subsequent phase.</p>
+
+<div class="source-card">
+  <div class="source-card-label">Aha feature &middot; SYM-2566</div>
+  <h3>92970 — Change wall thickness per wall — Implement</h3>
+
+  <h4>Background</h4>
+  <p>Claims Estimate (formerly Mobile Claims) and Estimate Mobile (iOS) include a diagram tool that allows users to sketch floor plans of a loss site. Wall thickness is controlled via Floorplan Properties, which provides two global default settings: one for <strong>interior wall thickness</strong> (default 4.0 inches) and one for <strong>exterior wall thickness</strong> (default 4.0 inches). The tool itself warns users that changing the interior wall thickness will affect the dimensions of all existing rooms on the floor plan.</p>
+  <p>Both settings are global — the interior thickness value applies uniformly to every interior wall in the floor plan, and the exterior thickness value applies uniformly to every exterior wall. There is no mechanism to override the thickness of an individual wall independently of these global defaults.</p>
+
+  <h4>Market Problem</h4>
+  <p>Residential properties with additions — rooms or wings built onto the original structure — commonly have walls of different thicknesses. The original home's framing may use different construction than the addition. When a user diagrams such a property today, they face an unresolvable conflict: the global wall thickness settings cannot be correct for both sections of the home simultaneously.</p>
+  <p>This breaks estimate accuracy at its foundation. Wall thickness directly feeds into room dimension calculations, which determine square footage, and therefore drive line items, material quantities, and final costs. A miscalculated wall thickness compounds across every affected room — creating leakage risk, estimate disputes with contractors and PAs, and re-work when the error is caught downstream.</p>
+  <p>The problem has been documented since May 2015 (Case 1210465) and is requested across 13 carrier clients including Liberty Mutual, Erie, QBE, and Donegal — a signal that this is not an edge case but a common field scenario. The inability to resolve it within the tool forces users to apply manual workarounds outside the software, introducing the exact data integrity and accuracy risks the platform is designed to eliminate.</p>
+</div>
+
+<!-- PHASE 1 -->
+<h2 id="phase1">Phase 1 — Research &amp; Market Problem</h2>
+<p>Before drafting anything, Claude searches the Aha repository for related existing requirements and documentation files that could inform the work or reveal prior decisions.</p>
+
+<div class="phase-section">
+  <div class="phase-section-title">Phase 1a &middot; Repository search findings</div>
+  <p>Claude runs <code>mcp__aha__search_documents</code> with terms derived from the feature title: <em>"wall thickness"</em>, <em>"diagram floor plan"</em>, and <em>"Floorplan Properties"</em>. Results surfaced:</p>
+  <ul>
+    <li><strong>SYM-2498</strong> — Payment Tracker deductible mismatch validation (Claims Estimate) — related in that it also addresses downstream estimate accuracy; confirms the team's established pattern of using validation warnings before applying irreversible changes to locked estimate data.</li>
+    <li><strong>SYM-2251</strong> — Company admin setting to control estimate sharing — establishes that Floorplan Properties-level settings are treated as company-scoped defaults; confirms the precedent that global settings coexist with per-item overrides without the override propagating upward.</li>
+    <li>Documentation glob on <code>docs/**/*</code> — no dedicated diagram-tool documentation found. The only related content is the <em>Claims Estimate</em> product sheet, which confirms the diagram tool ships on both web and iOS.</li>
+  </ul>
+  <p class="info"><strong>Finding applied downstream:</strong> The SYM-2498 pattern (prompt user before applying a change that affects existing data) directly shaped Detail 3 and Detail 6 of the per-wall thickness requirement — requiring a room-selection prompt when an interior shared wall is affected.</p>
+</div>
+
+<div class="phase-section" style="margin-top: 1rem;">
+  <div class="phase-section-title">Phase 1b/1c &middot; Market Problem</div>
+  <p><strong>Who is affected:</strong> Adjuster — Field (Experienced), Adjuster — Field (Novice), and Adjuster — Inside/Desk. Field adjusters encounter this during on-site inspection when diagramming properties with additions. Inside adjusters hit it when reviewing or correcting diagrams received from field vendors.</p>
+  <p><strong>The evidence of pain:</strong> The problem has been open since May 2015 — over 9 years — and is independently requested by 13 carrier clients including Liberty Mutual, Erie, QBE, and Donegal. The depth of the client list and the age of the case signal that this is a structural limitation of the tool, not an edge case. Users have developed workarounds (deliberate gaps between rooms, manual dimension notes outside the diagram) that create their own downstream problems: phantom rooms with inflated square footage, untraced manual corrections, and estimate-vs-field discrepancies that surface during contractor review or PA negotiation.</p>
+  <p><strong>Business connection:</strong> Wall thickness feeds directly into square footage, which drives every material quantity and line-item cost in the estimate. A systematic error at this layer is a direct source of indemnity leakage — overpayments when dimensions are inflated, estimate disputes when contractors or PAs identify the gap, and re-work costs when errors are corrected late in the cycle. Resolving this closes a documented competitive gap and directly supports retention for high-value carrier accounts.</p>
+</div>
+
+<div class="human-callout">
+  <strong>PM approval gate — Phase 1</strong>
+  PM reviews the market problem statement and confirms the framing is accurate. Any corrections to affected personas, client list, or business connection are made here before the workflow analysis begins.
+</div>
+
+<!-- PHASE 2 -->
+<h2 id="phase2">Phase 2 — Current Workflow</h2>
+<p>Claude models today's workflow in a structured table — making explicit exactly where the process breaks down, what the user does to work around it, and what the downstream cost is. This table is the traceability backbone: every objective in Phase 3 and every future-workflow row in Phase 4 must map back to a blocker row here.</p>
+
+<div class="phase-section">
+  <div class="phase-section-title">Phase 2 &middot; Current Workflow table</div>
+  <table>
+    <thead>
+      <tr><th>Step</th><th>User Action</th><th>Blocker</th><th>Impact</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Adjuster — Field (Experienced) opens the diagram tool in Claims Estimate or Estimate Mobile and creates a new floor plan for a property with an addition.</td>
+        <td>No indication in the tool that the property has structurally different wall sections — the diagram treats the entire property as uniform.</td>
+        <td>User proceeds without awareness of the downstream accuracy problem.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>User opens Floorplan Properties and sets the global interior and/or exterior wall thickness to match the majority of the structure (e.g., 4 inches interior).</td>
+        <td>Wall thickness is a single global value per wall type. There is no per-wall override.</td>
+        <td>User is forced to pick one value for all interior walls and one for all exterior walls, knowing it will be wrong for at least one section of the property.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>User draws rooms for the main structure by entering interior measurements.</td>
+        <td>None at this step — the main structure is represented accurately.</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>User draws rooms for the addition, which has thicker walls (e.g., 6 inches interior).</td>
+        <td>The global interior wall thickness still applies. The addition's rooms are drawn with the wrong wall thickness, producing incorrect interior dimensions.</td>
+        <td>Square footage is miscalculated for every addition room. Line items derived from those dimensions are inaccurate from the start.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>User attempts to correct by changing the global interior wall thickness to match the addition.</td>
+        <td>Changing the global value retroactively recalculates all existing rooms — including the main structure rooms that were already correct. The tool itself warns of this before the change is applied.</td>
+        <td>All previously accurate dimensions are now wrong. The user must choose which section to sacrifice.</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>User attempts a second workaround: deliberately leaves a gap between rooms to visually represent the thicker wall.</td>
+        <td>The system interprets any unenclosed space between rooms as an additional room, assigning it a room name and including it in calculations.</td>
+        <td>A phantom room is created in the estimate, inflating square footage and generating incorrect line items that must be manually removed — adding re-work and leakage risk.</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>User resorts to manually adjusting room dimensions after the fact, or documents the discrepancy in notes outside the diagram.</td>
+        <td>No in-tool solution exists. The workaround is manual, time-consuming, and not traceable within the estimate.</td>
+        <td>Increased time on file. Risk of errors carried forward into the estimate. Potential leakage or dispute when the contractor or PA identifies the discrepancy.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="human-callout">
+  <strong>PM approval gate — Phase 2</strong>
+  PM validates that the current workflow table accurately characterizes the pain. Corrections to step descriptions or blocker wording are made here. This table is not changed after approval.
+</div>
+
+<!-- PHASE 3 -->
+<h2 id="phase3">Phase 3 — Objectives</h2>
+<p>Claude derives the objectives from the blockers identified in Phase 2. Each bullet maps to one or more specific blocker rows — making scope explicit and giving the PM a natural de-scoping checkpoint before requirements are written.</p>
+
+<div class="phase-section">
+  <div class="phase-section-title">Phase 3 &middot; Objectives</div>
+  <ul>
+    <li><strong>Enable per-wall thickness overrides in the diagram tool.</strong> Users must be able to set a wall thickness on an individual wall that differs from the global Floorplan Properties default, so that properties with additions or mixed-framing construction can be diagrammed accurately without compromising any other wall's dimensions. <em>(Resolves blockers at Steps 2, 4, 5.)</em></li>
+    <li><strong>Preserve global wall thickness settings as the default.</strong> The existing Floorplan Properties interior and exterior wall thickness settings must continue to function as the floor-plan-wide defaults. A per-wall override applies only to the targeted wall and does not trigger recalculation of any other wall, eliminating the current all-or-nothing conflict. <em>(Resolves Step 5 blocker.)</em></li>
+    <li><strong>Eliminate the phantom room created by the gap workaround.</strong> By making accurate per-wall thickness representable directly in the diagram, users have no need to leave deliberate gaps between rooms. This removes a root cause of inflated square footage, incorrect line items, and downstream re-work. <em>(Resolves Step 6 blocker.)</em></li>
+    <li><strong>Maintain estimate accuracy and traceability for complex properties.</strong> Dimension calculations for every room must reflect the actual wall thickness applied to each bounding wall, so that square footage, material quantities, and resulting line items are correct by construction — not manually corrected after the fact. <em>(Resolves Step 7 blocker.)</em></li>
+    <li><strong>Deliver parity with the competitive baseline.</strong> This capability has been requested by 13 carrier clients since 2015. Providing it closes a documented gap and directly supports client retention for accounts including Liberty Mutual, Erie, and QBE.</li>
+  </ul>
+</div>
+
+<div class="human-callout">
+  <strong>PM approval gate — Phase 3</strong>
+  PM checks that each objective is traceable to a Phase 2 blocker and that no objective represents a separate multi-month project that should be de-scoped. Approved objectives become the frame for the future workflow.
+</div>
+
+<!-- PHASE 4 -->
+<h2 id="phase4">Phase 4 — Future Workflow</h2>
+<p>Claude drafts the to-be state — showing how each Phase 2 blocker is resolved by the new capability. Every row in this table must map to a blocker row in Phase 2.</p>
+
+<div class="phase-section">
+  <div class="phase-section-title">Phase 4 &middot; Future Workflow table</div>
+  <table>
+    <thead>
+      <tr><th>Step</th><th>User Action</th><th>New Feature / Capability</th><th>System Response</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>User opens the diagram tool in Claims Estimate or Estimate Mobile and creates a new floor plan for a property with an addition.</td>
+        <td>No change to this step — existing floor plan creation workflow is unchanged.</td>
+        <td>Floor plan is created with the global interior and exterior wall thickness defaults set in Floorplan Properties. All walls inherit the applicable default value unless overridden.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>User sets the global interior and exterior wall thickness in Floorplan Properties to match the majority of the structure (e.g., 4 inches interior, 6 inches exterior).</td>
+        <td>Existing Floorplan Properties settings are preserved as the floor-plan-wide defaults.</td>
+        <td>All interior walls default to 4 inches, all exterior walls to 6 inches. No existing rooms are affected.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>User draws rooms for the main structure by entering interior measurements.</td>
+        <td>No change — existing diagram drawing workflow is unchanged.</td>
+        <td>Room interior dimensions are stored as entered. Exterior dimensions are calculated by adding wall thickness outward from the interior boundary.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>User selects an individual wall on the addition that has a different thickness (e.g., 6 inches interior).</td>
+        <td>Per-wall thickness override. User selects a specific wall and sets a custom thickness value, independent of the global setting.</td>
+        <td>The selected wall updates to 6 inches. The wall renders visually at its actual set thickness, distinguishing it proportionally from adjacent default-thickness walls.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>The per-wall thickness is applied to an exterior wall.</td>
+        <td>Interior dimensions are preserved. The override expands the wall outward — it does not modify the interior dimensions of any bounded room.</td>
+        <td>Interior measurements remain exactly as the user entered them. The system recalculates exterior dimensions outward to accommodate the new wall thickness. Floor and ceiling surface quantities are recalculated immediately.</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>The per-wall thickness is applied to an interior shared wall (rooms on both sides).</td>
+        <td>System prompts the user to select which room absorbs the thickness delta.</td>
+        <td>System displays: "Which room should absorb the thickness change? [Room A name] or [Room B name]?" The selected room's interior dimensions reduce by the thickness delta. The non-selected room is unchanged. Surface quantities for the affected room are recalculated immediately.</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>User changes the global wall thickness in Floorplan Properties after per-wall overrides have been set.</td>
+        <td>Per-wall overrides are protected from global changes.</td>
+        <td>The global change applies only to walls without a custom override. Overridden walls retain their custom values. Interior dimensions of all rooms remain unchanged throughout.</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>User reviews the completed diagram.</td>
+        <td>Wall renders at actual set thickness; no additional visual markers needed.</td>
+        <td>All interior dimensions match what the user entered. Exterior dimensions and derived square footage correctly reflect the actual wall thickness of each wall — no manual corrections required. No phantom rooms exist.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="human-callout">
+  <strong>PM approval gate — Phase 4</strong>
+  PM validates that the future state described is what was actually intended. This is the last checkpoint before requirements are written. Changes to the Future Workflow after approval require revising the requirements.
+</div>
+
+<!-- PHASE 5 -->
+<h2 id="phase5">Phase 5 — Requirements (as drafted)</h2>
+<p>Claude drafts one requirement per product per capability, using the approved Future Workflow as the source. This feature affects Claims Estimate (web) and Estimate Mobile (iOS) — two separate requirements. No <code>[NEEDS CLARIFICATION]</code> markers were needed; the feature description contained sufficient detail on interaction patterns and edge cases for both products.</p>
+<p>Requirements are presented as 1 of 2 and 2 of 2 so the PM can refer to each by number during review.</p>
+
+<div class="req-card">
+  <div class="req-card-header">
+    <span>1 of 2 &mdash; Draft</span>
+    <span>&middot; Claims Estimate &amp; Estimate Mobile (iOS)</span>
+  </div>
+  <div class="req-card-body">
+    <p><strong>Applies to:</strong> Claims Estimate, Estimate Mobile (iOS)</p>
+    <p><strong>Statement:</strong> As a user, I want to set a custom wall thickness on an individual wall so that I can accurately represent properties where different sections have different wall construction without affecting the dimensions of any other wall.</p>
+    <p><strong>Details:</strong></p>
+    <ol>
+      <li>A wall thickness override option must be accessible by selecting an individual wall in the diagram — via context menu or wall properties panel on Claims Estimate; via tap-and-hold or wall properties panel consistent with existing iOS interaction patterns on Estimate Mobile.</li>
+      <li>The per-wall thickness override must accept the same input format as the existing Floorplan Properties interior and exterior wall thickness fields: values entered in inches with up to one decimal place, adjustable in 0.5 inch increments via arrow controls or via manual entry. No minimum or maximum value is enforced beyond what the existing Floorplan Properties fields currently enforce.</li>
+      <li>When a per-wall thickness override is applied, the system behavior depends on the wall type: (a) Exterior wall — one side of the wall bounds open space or the building exterior: interior dimensions of the bounded room are preserved exactly as entered. The system expands the wall outward, recalculating exterior dimensions only. (b) Interior shared wall — enclosed rooms on both sides: the system must prompt the user: Which room should absorb the thickness change? [Room A name] or [Room B name]? The selected room interior dimensions reduce by the thickness delta. The non-selected room interior dimensions are unchanged.</li>
+      <li>If a wall borders two rooms and the user is prompted per Detail 3, only the room selected by the user is affected. The system must not silently modify any room the user did not select.</li>
+      <li>When the global wall thickness is subsequently changed via Floorplan Properties, walls with a per-wall override retain their custom value and are not affected by the global change.</li>
+      <li>A user must be able to remove a per-wall override and revert the wall to the current global default. On revert, the inverse logic of Detail 3 applies: exterior walls recalculate outward; interior shared walls prompt the user to select which room recovers the space.</li>
+      <li>If a room containing an overridden wall is copied or duplicated, the copied wall inherits the custom thickness value.</li>
+      <li>Per-wall thickness overrides set in Estimate Mobile must be preserved and correctly reflected when the diagram is synced to Claims Estimate.</li>
+      <li>Wall thickness overrides must be applied to one wall at a time. Multi-wall selection for simultaneous thickness override is not supported. If a user attempts to select multiple walls before applying a thickness change, the override option must not be available until a single wall is selected.</li>
+      <li>If applying a per-wall thickness override would cause one or more objects on the affected wall — doors, windows, openings, or blocks — to no longer fit within the available wall space, the system must display the existing validation warning before applying the change. The override must not be applied until the conflict is resolved. This detection must behave consistently with how the system currently handles the same conflict when changing interior or exterior wall thickness globally via Floorplan Properties.</li>
+      <li>When a per-wall thickness override changes the dimensions of any bounded room, all quantity-dependent calculations for those rooms must be recalculated immediately, including but not limited to floor surface area and ceiling surface area. The updated quantities must be reflected in the estimate at the time the override is applied.</li>
+    </ol>
+    <p><strong>Example:</strong> A field tech diagrams a home where the Laundry and Garage share a wall. When they override that shared wall from 4 inches to 6 inches, the system prompts: Which room should absorb the thickness change? Laundry or Garage? The tech selects Laundry. The Laundry interior dimensions reduce by 2 inches, and its floor and ceiling surface quantities are recalculated immediately to reflect the reduced area. The Garage is untouched. On the other side of the home, overriding an exterior wall from 4 inches to 6 inches preserves the interior room dimensions, expands the building footprint outward, and recalculates affected surface quantities accordingly — no prompt required.</p>
+  </div>
+</div>
+
+<div class="req-card">
+  <div class="req-card-header">
+    <span>2 of 2 &mdash; Draft</span>
+    <span>&middot; Claims Estimate &amp; Estimate Mobile (iOS)</span>
+  </div>
+  <div class="req-card-body">
+    <p><strong>Applies to:</strong> Claims Estimate, Estimate Mobile (iOS)</p>
+    <p><strong>Statement:</strong> As a user, I want a wall with a custom thickness to render visually at its actual set thickness in the diagram so that the floor plan accurately reflects the real-world construction without requiring any additional visual markers.</p>
+    <p><strong>Details:</strong></p>
+    <ol>
+      <li>A wall with a per-wall thickness override must render in the diagram canvas at its actual set thickness — appearing visually thicker or thinner than adjacent walls that use a different thickness value, consistent with how the diagram can render exterior walls thicker than interior walls.</li>
+      <li>The rendered thickness of the wall on the canvas must be proportional to its set value relative to other walls in the diagram.</li>
+      <li>No additional visual treatment — such as a color change, line style change, or marker — is applied to distinguish an overridden wall from a default wall. The rendered thickness is the sole visual differentiator.</li>
+      <li>The wall must render at its set thickness in both the diagram editing view and on printed and exported outputs.</li>
+      <li>The rendered wall thickness must not obscure dimension labels or other wall annotations on the diagram canvas.</li>
+    </ol>
+    <p><strong>Example:</strong> A user overrides the wall between the Laundry and Garage from 4 inches to 6 inches. In the diagram, that wall renders visibly thicker than the surrounding 4-inch walls — the same way exterior walls can appear thicker than interior walls. The printed floor plan shows the same proportional thickness with no additional styling applied.</p>
+  </div>
+</div>
+
+<div class="human-callout">
+  <strong>PM approval gate — Phase 5</strong>
+  PM reviews both requirements. No <code>[NEEDS CLARIFICATION]</code> markers were present. PM approves the full set before Claude writes to Aha.
+</div>
+
+<!-- PHASE 7 -->
+<h2 id="phase7">Phase 7 — Written to Aha</h2>
+<p>After PM approval, Claude calls <code>mcp__aha__create_requirement</code> sequentially — once per requirement — and confirms each write before calling the next.</p>
+
+<div class="phase-section">
+  <div class="phase-section-title">Phase 7 &middot; Write confirmation</div>
+  <blockquote>
+    ✓ Requirement 1 of 2 written: SYM-2566-1 — Per-wall thickness override<br>
+    ✓ Requirement 2 of 2 written: SYM-2566-2 — Wall thickness rendered at actual set value<br><br>
+    ✓ 2 requirements written to SYM-2566. Run <code>/pm-req-review SYM-2566</code> to quality-check before handing off to the dev team.
+  </blockquote>
+</div>
+
+<!-- QUALITY GATE -->
+<h2 id="review">Quality Gate — /pm-req-review</h2>
+<p>The PM runs <code>/pm-req-review SYM-2566</code>. Claude fetches both child requirements from Aha and runs five checks.</p>
+
+<div class="phase-section">
+  <div class="phase-section-title">Review results &middot; SYM-2566</div>
+
+  <table>
+    <thead>
+      <tr><th>Check</th><th>Finding</th><th>Severity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A — Product coverage</strong></td>
+        <td>Feature affects the diagram tool. The diagram tool ships in Claims Estimate (web) and Estimate Mobile (iOS). Both products have requirements. Capture (Android) does not include a diagram tool — no requirement needed there. Claims Workspace is not the authoring surface for diagrams and has no diagram editing capability — no requirement needed. Coverage is complete.</td>
+        <td style="color: #16a34a; font-weight: 600;">✓ Pass</td>
+      </tr>
+      <tr>
+        <td><strong>B — No contradictions</strong></td>
+        <td>SYM-2566-1 Detail 3 defines the room-selection prompt for interior shared walls. SYM-2566-2 Detail 3 states no additional visual markers are applied beyond rendered thickness. These are complementary, not contradictory — one governs dimension behavior, the other governs rendering. No conflicts found.</td>
+        <td style="color: #16a34a; font-weight: 600;">✓ Pass</td>
+      </tr>
+      <tr>
+        <td><strong>C — Sufficient detail</strong></td>
+        <td>SYM-2566-1 covers 11 numbered details including edge cases (multi-wall selection blocked, copy/duplicate behavior, objects-on-wall conflict, sync from mobile to web). SYM-2566-2 covers print/export rendering and label-occlusion constraint. Both requirements include concrete examples. A developer can implement without PM back-and-forth.</td>
+        <td style="color: #16a34a; font-weight: 600;">✓ Pass</td>
+      </tr>
+      <tr>
+        <td><strong>D — No unresolved markers</strong></td>
+        <td>No <code>[NEEDS CLARIFICATION: ...]</code> markers found in either requirement.</td>
+        <td style="color: #16a34a; font-weight: 600;">✓ Pass</td>
+      </tr>
+      <tr>
+        <td><strong>E — Format compliance</strong></td>
+        <td>Both requirements follow the exact format: <strong>Applies to</strong> / <strong>Statement</strong> (user story) / <strong>Details</strong> (numbered list) / <strong>Example</strong>. Product names match CLAUDE.md exactly. Note: the Statement uses "As a user" rather than a specific persona sub-type (e.g., "Adjuster — Field (Experienced)"). This is a <em>should-fix</em> — both products are used by multiple personas, but specificity at the Statement level would strengthen traceability.</td>
+        <td style="color: #ca8a04; font-weight: 600;">⚠ Should-fix</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Review summary:</strong> 4 checks passed, 0 must-fix findings, 1 should-fix (Check E — persona specificity in Statement). The feature is handoff-ready. The should-fix can be addressed at the PM's discretion before dev team pickup.</p>
+  <blockquote>✓ 2 of 2 requirements passed all must-fix checks. Ready for dev team handoff via <code>/sym-spec-new SYM-2566</code>.</blockquote>
+</div>
+
+<!-- FINAL REQUIREMENTS -->
+<h2 id="final">Final requirements</h2>
+<p>The approved requirements as they exist in Aha under SYM-2566. These are the exact records fetched from Aha — no fabricated content.</p>
+
+<div class="req-card">
+  <div class="req-card-header">
+    <span>SYM-2566-1</span>
+    <span>&middot; Per-wall thickness override</span>
+  </div>
+  <div class="req-card-body">
+    <p><strong>Applies to:</strong> Claims Estimate, Estimate Mobile (iOS)</p>
+    <p><strong>Statement:</strong> As a user, I want to set a custom wall thickness on an individual wall so that I can accurately represent properties where different sections have different wall construction without affecting the dimensions of any other wall.</p>
+    <p><strong>Details:</strong></p>
+    <ol>
+      <li>A wall thickness override option must be accessible by selecting an individual wall in the diagram — via context menu or wall properties panel on Claims Estimate; via tap-and-hold or wall properties panel consistent with existing iOS interaction patterns on Estimate Mobile.</li>
+      <li>The per-wall thickness override must accept the same input format as the existing Floorplan Properties interior and exterior wall thickness fields: values entered in inches with up to one decimal place, adjustable in 0.5 inch increments via arrow controls or via manual entry. No minimum or maximum value is enforced beyond what the existing Floorplan Properties fields currently enforce.</li>
+      <li>When a per-wall thickness override is applied, the system behavior depends on the wall type: (a) Exterior wall — one side of the wall bounds open space or the building exterior: interior dimensions of the bounded room are preserved exactly as entered. The system expands the wall outward, recalculating exterior dimensions only. (b) Interior shared wall — enclosed rooms on both sides: the system must prompt the user: Which room should absorb the thickness change? [Room A name] or [Room B name]? The selected room interior dimensions reduce by the thickness delta. The non-selected room interior dimensions are unchanged.</li>
+      <li>If a wall borders two rooms and the user is prompted per Detail 3, only the room selected by the user is affected. The system must not silently modify any room the user did not select.</li>
+      <li>When the global wall thickness is subsequently changed via Floorplan Properties, walls with a per-wall override retain their custom value and are not affected by the global change.</li>
+      <li>A user must be able to remove a per-wall override and revert the wall to the current global default. On revert, the inverse logic of Detail 3 applies: exterior walls recalculate outward; interior shared walls prompt the user to select which room recovers the space.</li>
+      <li>If a room containing an overridden wall is copied or duplicated, the copied wall inherits the custom thickness value.</li>
+      <li>Per-wall thickness overrides set in Estimate Mobile must be preserved and correctly reflected when the diagram is synced to Claims Estimate.</li>
+      <li>Wall thickness overrides must be applied to one wall at a time. Multi-wall selection for simultaneous thickness override is not supported. If a user attempts to select multiple walls before applying a thickness change, the override option must not be available until a single wall is selected.</li>
+      <li>If applying a per-wall thickness override would cause one or more objects on the affected wall — doors, windows, openings, or blocks — to no longer fit within the available wall space, the system must display the existing validation warning before applying the change. The override must not be applied until the conflict is resolved. This detection must behave consistently with how the system currently handles the same conflict when changing interior or exterior wall thickness globally via Floorplan Properties.</li>
+      <li>When a per-wall thickness override changes the dimensions of any bounded room, all quantity-dependent calculations for those rooms must be recalculated immediately, including but not limited to floor surface area and ceiling surface area. The updated quantities must be reflected in the estimate at the time the override is applied.</li>
+    </ol>
+    <p><strong>Example:</strong> A field tech diagrams a home where the Laundry and Garage share a wall. When they override that shared wall from 4 inches to 6 inches, the system prompts: Which room should absorb the thickness change? Laundry or Garage? The tech selects Laundry. The Laundry interior dimensions reduce by 2 inches, and its floor and ceiling surface quantities are recalculated immediately to reflect the reduced area. The Garage is untouched. On the other side of the home, overriding an exterior wall from 4 inches to 6 inches preserves the interior room dimensions, expands the building footprint outward, and recalculates affected surface quantities accordingly — no prompt required.</p>
+  </div>
+</div>
+
+<div class="req-card">
+  <div class="req-card-header">
+    <span>SYM-2566-2</span>
+    <span>&middot; Wall thickness rendered at actual set value</span>
+  </div>
+  <div class="req-card-body">
+    <p><strong>Applies to:</strong> Claims Estimate, Estimate Mobile (iOS)</p>
+    <p><strong>Statement:</strong> As a user, I want a wall with a custom thickness to render visually at its actual set thickness in the diagram so that the floor plan accurately reflects the real-world construction without requiring any additional visual markers.</p>
+    <p><strong>Details:</strong></p>
+    <ol>
+      <li>A wall with a per-wall thickness override must render in the diagram canvas at its actual set thickness — appearing visually thicker or thinner than adjacent walls that use a different thickness value, consistent with how the diagram can render exterior walls thicker than interior walls.</li>
+      <li>The rendered thickness of the wall on the canvas must be proportional to its set value relative to other walls in the diagram.</li>
+      <li>No additional visual treatment — such as a color change, line style change, or marker — is applied to distinguish an overridden wall from a default wall. The rendered thickness is the sole visual differentiator.</li>
+      <li>The wall must render at its set thickness in both the diagram editing view and on printed and exported outputs.</li>
+      <li>The rendered wall thickness must not obscure dimension labels or other wall annotations on the diagram canvas.</li>
+    </ol>
+    <p><strong>Example:</strong> A user overrides the wall between the Laundry and Garage from 4 inches to 6 inches. In the diagram, that wall renders visibly thicker than the surrounding 4-inch walls — the same way exterior walls can appear thicker than interior walls. The printed floor plan shows the same proportional thickness with no additional styling applied.</p>
+  </div>
+</div>
+
+<hr>
+<p class="page-footer">
+  <strong>Companion docs:</strong>
+  <a href="pm-requirements-workflow.html">AI-First Requirements Workflow</a> &middot;
+  <a href="pm-requirements-flowchart.html">Workflow flowchart</a> &middot;
+  <a href="../Dev team Process/spec-driven-development.html">Dev team: spec-driven development</a>
+</p>
+
+</main>
+</div>
+</div>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">&#8593;</button>
+
+<script>
+  (function () {
+    const links = document.querySelectorAll('.sidebar-nav a');
+    const map = new Map();
+    links.forEach(a => {
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (target) map.set(target, a);
+    });
+    let activeLink = null;
+    const setActive = (el) => {
+      if (!el || el === activeLink) return;
+      if (activeLink) activeLink.classList.remove('active');
+      el.classList.add('active');
+      activeLink = el;
+    };
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter(e => e.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible.length > 0) { const link = map.get(visible[0].target); setActive(link); }
+    }, { rootMargin: '-80px 0px -65% 0px', threshold: 0 });
+    map.forEach((_, target) => observer.observe(target));
+    const btt = document.getElementById('backToTop');
+    const onScroll = () => {
+      if (window.scrollY > 400) btt.classList.add('visible');
+      else btt.classList.remove('visible');
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+</script>
+</body>
+</html>
