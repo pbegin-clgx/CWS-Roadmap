@@ -131,6 +131,7 @@ When approved:
 4. Commit:
    ```bash
    git add docs/user-guide/admin-guide/sections/
+   git add docs/user-guide/admin-guide/assets/
    git commit -m "docs(admin-guide): update for release [reference] — [brief summary]"
    ```
 5. Confirm: "✓ Admin Guide updated for [release reference]. Run `npm run build` in `docs/user-guide/admin-guide/` to regenerate the HTML, then print to PDF for distribution."
