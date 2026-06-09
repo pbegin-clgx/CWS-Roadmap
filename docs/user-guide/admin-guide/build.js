@@ -59,6 +59,10 @@ function build() {
     .filter(f => f.endsWith('.md'))
     .sort();
 
+  if (sectionFiles.length === 0) {
+    console.warn('Warning: no .md files found in sections/ — output will have no content.');
+  }
+
   let combinedHtml = '';
   for (const file of sectionFiles) {
     const md = fs.readFileSync(path.join(SECTIONS_DIR, file), 'utf8');
@@ -67,6 +71,11 @@ function build() {
 
   const headings = extractHeadings(combinedHtml);
   const toc = buildToc(headings);
+
+  if (!fs.existsSync(TEMPLATE_FILE)) {
+    throw new Error(`Template not found at: ${TEMPLATE_FILE}\nMake sure template.html exists in the admin-guide directory.`);
+  }
+
   let template = fs.readFileSync(TEMPLATE_FILE, 'utf8');
 
   template = template
