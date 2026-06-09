@@ -7,3 +7,6 @@ mcp-server/node_modules/
 
 # build artifacts — dist/ IS committed so PMs skip npm install
 # do NOT add mcp-server/dist/ here
+
+docs/user-guide/admin-guide/node_modules/
+docs/user-guide/admin-guide/dist/
