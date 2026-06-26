@@ -6,6 +6,8 @@ const { proposeCut, applyNextAssessment } = require('./lib/propose');
 const { detectChanges } = require('./lib/changes');
 const { writeOutputs } = require('./lib/render');
 const { makeRenamer, loadRenameMap } = require('./lib/rename');
+const { loadTheme } = require('./lib/deck-theme');
+const { deckFromWorkbook } = require('./lib/deck');
 
 function analyze(paths, opts) {
   const assessPaths = paths.assess;
@@ -131,7 +133,16 @@ function main() {
     records.sort((x, y) => (order[x.milestone] - order[y.milestone]) || ((parseFloat(x.priority) || 9999) - (parseFloat(y.priority) || 9999)));
     const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {}, opts: analysis.opts });
     console.log(`finalize: wrote\n ${out.srcPath}\n ${out.blPath}\n ${out.repPath}`);
-  } else { console.error('usage: run.js analyze|finalize ...'); process.exit(1); }
+  } else if (cmd === 'deck') {
+    let theme;
+    try {
+      theme = loadTheme(a.theme || path.join(__dirname, 'deck-theme.json'));
+    } catch (e) { console.error(`deck failed: ${e.message}`); process.exit(1); }
+    const out = path.join(a.outdir, `Product Roadmap Deck ${a.date}.pptx`);
+    deckFromWorkbook(a.source, theme, out)
+      .then((p) => console.log(`deck: wrote\n ${p}`))
+      .catch((e) => { console.error(`deck failed: ${e.message}`); process.exit(1); });
+  } else { console.error('usage: run.js analyze|finalize|deck ...'); process.exit(1); }
 }
 
 if (require.main === module) main();
