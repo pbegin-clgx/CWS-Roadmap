@@ -24,6 +24,15 @@ test('3-No uses Aha release overrides then priority cut-lines', () => {
   assert.strictEqual(c({ include: '3-No', releaseInAha: 'Product Backlog', priority: 130 }), 'DROP'); // beyond
 });
 
+test('nextRelease works as full quarter label', () => {
+  const c2 = (a) => classify(a, { ...OPTS, nextRelease: 'v8.8 (Q4 2026)' });
+  assert.strictEqual(c2({ include: '3-No', releaseInAha: 'Release 8.8', priority: 999 }), 'v8.8 (Q4 2026)');
+});
+
+test('release beyond next goes to future', () => {
+  assert.strictEqual(c({ include: '3-No', releaseInAha: 'Release 9.0', priority: 5 }), 'Future');
+});
+
 test('isInternal flags tech-debt/internal summaries', () => {
   assert.ok(isInternal('93034 - Incorporate new 8.7 translations for all markets - Implement'));
   assert.ok(isInternal('Migrate UX to use Symbility-net-lib library - Implement'));

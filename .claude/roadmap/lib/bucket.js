@@ -8,10 +8,14 @@ function classify(a, opts) {
   const prio = (a.priority == null || a.priority === '' || a.priority === '-') ? Infinity : parseFloat(a.priority);
   if (/^1-Yes/.test(inc) || /^2\.1/.test(inc) || /^2\.2/.test(inc)) return currentRelease;
   if (/^2\.3/.test(inc) || /^2\.4/.test(inc)) return nextRelease;
-  // 3-No (and any other non-current status)
-  const nextNum = (String(nextRelease).match(/8\.\d+/) || [])[0];
-  if (nextNum && new RegExp(`Release ${nextNum.replace('.', '\\.')}`).test(rel)) return nextRelease;
-  if (/Release 8\.9|Release 9/.test(rel)) return futureLabel;
+  // 3-No (and any other non-current status): compare the release named in Aha against the next release number
+  const nextNum = parseFloat((String(nextRelease).match(/(\d+\.\d+)/) || [])[1]);
+  const relMatch = rel.match(/Release\s+(\d+\.\d+|\d+)/);
+  const relNum = relMatch ? parseFloat(relMatch[1]) : null;
+  if (Number.isFinite(nextNum) && relNum != null) {
+    if (relNum === nextNum) return nextRelease;
+    if (relNum > nextNum) return futureLabel;
+  }
   if (prio <= cut88) return nextRelease;
   if (prio <= cutFuture) return futureLabel;
   return 'DROP';
