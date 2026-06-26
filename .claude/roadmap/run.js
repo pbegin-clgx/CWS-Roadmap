@@ -14,11 +14,19 @@ function analyze(paths, opts) {
   const prev = parsePrevSource(paths.prev);
 
   const buckets = {}; const newFeatures = []; const judgment = []; const current = [];
+  const assessMeta = {}; const deliveredByPriority = [];
   const assessmentSyms = new Set([...primary.keys(), ...(nextAssess ? nextAssess.keys() : [])]);
   const nextNum = (String(opts.nextRelease).match(/8\.\d+/) || [])[0];
 
   for (const [sym, a] of primary) {
+    assessMeta[sym] = { effort: a.effort, devComplete: a.devComplete };
     if (isInternal(a.summary)) continue;
+    // A negative Product Priority marks a feature that has already shipped — treat as Delivered, off the active roadmap.
+    if (Number.isFinite(a.priority) && a.priority < 0) {
+      const c0 = prev.get(sym);
+      deliveredByPriority.push({ sym, feature: c0 ? c0.feature : cleanName(a.summary) });
+      continue;
+    }
     let ms = classify(a, opts);
     if (ms === 'DROP') continue;
     ms = applyNextAssessment(ms, sym, nextAssess, opts);
@@ -55,7 +63,10 @@ function analyze(paths, opts) {
   const proposedCut = proposeCut(tail);
   const changes = detectChanges(prev, current, assessmentSyms);
   changes.delivered = changes.delivered.filter((d) => /^SYM-\d+$/.test(String(d.sym).trim()));
-  return { opts, proposedCut, buckets, newFeatures, judgment, changes };
+  // Merge negative-priority (shipped) features into the delivered list, de-duplicated.
+  const deliveredSeen = new Set(changes.delivered.map((d) => d.sym));
+  for (const d of deliveredByPriority) if (!deliveredSeen.has(d.sym)) { changes.delivered.push(d); deliveredSeen.add(d.sym); }
+  return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta };
 }
 
 function parseArgs(argv) { const o = {}; for (let i = 0; i < argv.length; i += 2) o[argv[i].replace(/^--/, '')] = argv[i + 1]; return o; }
@@ -84,7 +95,7 @@ function main() {
     }
     const order = { [analysis.opts.currentRelease]: 0, [analysis.opts.nextRelease]: 1, [analysis.opts.futureLabel]: 2 };
     records.sort((x, y) => (order[x.milestone] - order[y.milestone]) || ((parseFloat(x.priority) || 9999) - (parseFloat(y.priority) || 9999)));
-    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer });
+    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {} });
     console.log(`finalize: wrote\n ${out.srcPath}\n ${out.blPath}\n ${out.repPath}`);
   } else { console.error('usage: run.js analyze|finalize ...'); process.exit(1); }
 }
