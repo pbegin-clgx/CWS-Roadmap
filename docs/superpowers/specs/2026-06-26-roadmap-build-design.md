@@ -108,6 +108,7 @@ The command runs deterministic bucketing, then **pauses for review before writin
 1. **Cut-line proposal** — the sorted `3-No` tail with the proposed 8.8/Future boundary; Pascal confirms or moves it.
 2. **Judgment items** — borderline cases the rule flags rather than decides: deferred-initiative clusters, Aha-release-vs-priority conflicts, multi-code rows.
 3. **Draft descriptions & Product/Theme** for new features, for quick approval/edit.
+4. **Unassessed Aha features** — features in the Aha export but in neither the Assessment nor the previous Source (otherwise missing from Source and Backlog entirely). Pascal picks which to add and at which milestone; approved ones become `additions` (injected as records, marked New, New Priority = Aha Product Priority).
 
 On confirmation, the files are written. Re-running with adjusted cut-lines is cheap.
 

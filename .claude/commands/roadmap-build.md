@@ -28,12 +28,15 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
    - **Cut-line:** show `proposedCut` and the sorted `3-No`/`2.x` tail around it; ask the user to confirm or adjust `cut88`/`cutFuture`. If changed, re-run `analyze` with `--cut88/--cutFuture` so re-bucketing reflects the new lines.
    - **Judgment items:** list `analysis.judgment` with the reason; ask the user's call for each (keep / move to a named milestone / drop).
    - **New descriptions:** for each entry in `analysis.newFeatures`, draft a short Description **in the house style from `product-team-claude/CLAUDE.md`** (personas/terminology/example requirements) plus a proposed Product and Strategic Theme from the known sets. Present for approval/edit.
+   - **Unassessed Aha features:** list `analysis.unassessed` — features in the Aha export but in neither the Assessment nor the previous Source (they would otherwise be missing from Source AND Backlog). For each, show its Aha priority, status, release, and initiative. Ask the user **which (if any) to add and at which milestone**. For each chosen feature, draft a Product / Strategic Theme / Description in house style.
 
 4. **Assemble `overrides.json`** in `.claude/roadmap/`:
    ```json
    { "descriptions": { "SYM-xxxx": {"product": "...", "theme": "...", "description": "..."} },
-     "milestoneOverrides": { "SYM-yyyy": "<milestone label>" } }
+     "milestoneOverrides": { "SYM-yyyy": "<milestone label>" },
+     "additions": [ {"sym": "SYM-zzzz", "milestone": "<label>", "product": "...", "theme": "...", "description": "..."} ] }
    ```
+   `additions` are the user-approved unassessed features; they are injected as records and marked **New** (New Priority defaults to the Aha Product Priority).
 
 5. **Run finalize:**
    ```
@@ -41,7 +44,7 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
      --aha "<aha>" --prev "<prev>" --outdir "<repo>/Roadmap" --date "<YYYYMMDD>"
    ```
 
-6. **Report** the three output paths and a one-paragraph summary: counts per milestone, # carried vs # newly described, # delivered, # priority UP/DOWN, # flagged for review.
+6. **Report** the three output paths and a one-paragraph summary: counts per milestone, # carried vs # newly described, # added from the unassessed-Aha list, # delivered, # priority UP/DOWN, # flagged for review.
 
 ## Notes
 - Lower priority number = higher priority.
