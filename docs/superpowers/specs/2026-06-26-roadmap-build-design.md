@@ -148,6 +148,6 @@ Scripts live under `.claude/roadmap/` (or `scripts/roadmap/`); the skill file un
 
 ## 12. Phasing
 
-- **Phase 1 (this spec):** Source + Backlog + Change Report with review queue.
-- **Phase 2:** auto-build Summary matrix + Detailed Q-sheets in the Source workbook.
-- **Phase 3:** regenerate the PowerPoint deck from the template.
+- **Phase 1 (this spec):** Source + Backlog + Change Report with review queue. ✅ Built.
+- **Phase 2:** auto-build Summary matrix + Detailed per-milestone sheets in the Source workbook. ✅ Built — `Summary` (Product × milestone, bulleted cells) + `Detailed <release>` sheets (Product | Feature (SYM) | Description) are written into the Source workbook by `writeOutputs` when `opts` is supplied.
+- **Phase 3:** regenerate the PowerPoint deck from the template. (Not yet built.)

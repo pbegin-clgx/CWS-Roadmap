@@ -129,7 +129,7 @@ function main() {
     }
     const order = { [analysis.opts.currentRelease]: 0, [analysis.opts.nextRelease]: 1, [analysis.opts.futureLabel]: 2 };
     records.sort((x, y) => (order[x.milestone] - order[y.milestone]) || ((parseFloat(x.priority) || 9999) - (parseFloat(y.priority) || 9999)));
-    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {} });
+    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {}, opts: analysis.opts });
     console.log(`finalize: wrote\n ${out.srcPath}\n ${out.blPath}\n ${out.repPath}`);
   } else { console.error('usage: run.js analyze|finalize ...'); process.exit(1); }
 }
