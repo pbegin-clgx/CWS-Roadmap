@@ -39,4 +39,17 @@ function parsePrevSource(path, sheetName = 'Source') {
   return m;
 }
 
-module.exports = { parseAssessment, parseAha, parsePrevSource, cleanName };
+function parsePrevSourceRows(path, sheetName = 'Source') {
+  const rows = readSheet(path, sheetName);
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    out.push({
+      milestone: clean1(r[0]), product: clean1(r[1]), feature: clean1(r[2]), theme: clean1(r[3]),
+      code: clean1(r[4]), priority: r[5], prob: clean1(r[6]), description: String(r[7]).trim(),
+    });
+  }
+  return out;
+}
+
+module.exports = { parseAssessment, parseAha, parsePrevSource, parsePrevSourceRows, cleanName };

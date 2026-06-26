@@ -32,4 +32,6 @@ test('backtest reproduces >=90% milestone agreement and 100% current-release rec
   console.log(`  agreement: ${(agreement*100).toFixed(1)}% (${same}/${shared}), recall87: ${(recall87*100).toFixed(1)}% (${got87}/${real87})`);
   assert.ok(agreement >= 0.90, `milestone agreement ${(agreement*100).toFixed(0)}% < 90%`);
   assert.strictEqual(recall87, 1, `current-release recall ${(recall87*100).toFixed(0)}% != 100%`);
+  assert.ok(a.proposedCut.cut88 <= 90, `proposedCut.cut88 ${a.proposedCut.cut88} should be in in-roadmap range (<=90), not skewed by low-priority tail`);
+  assert.ok(a.proposedCut.cutFuture === 110);
 });

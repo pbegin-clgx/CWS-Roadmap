@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { parseAssessment, parseAha, parsePrevSource, cleanName } = require('./lib/parse');
+const { parseAssessment, parseAha, parsePrevSource, parsePrevSourceRows, cleanName } = require('./lib/parse');
 const { classify, isInternal } = require('./lib/bucket');
 const { proposeCut, applyNextAssessment } = require('./lib/propose');
 const { detectChanges } = require('./lib/changes');
@@ -33,11 +33,26 @@ function analyze(paths, opts) {
     const nearCut = !c && Number.isFinite(a.priority) && Math.abs(a.priority - opts.cut88) <= 5;
     if (relConflict || nearCut) judgment.push({ sym, feature: rec.feature, reason: relConflict ? `Aha says ${rel} but rule placed ${ms}` : 'new feature near cut-line' });
   }
+  // Carry forward manually-curated prev-Source rows that can never appear in an Assessment
+  // (blank, '-', or multi-code Feature Code) so they are not silently dropped (spec §5/§10).
+  const isSingleSym = (code) => /^SYM-\d+$/.test(String(code).trim());
+  for (const row of parsePrevSourceRows(paths.prev)) {
+    if (isSingleSym(row.code) || !row.feature) continue;
+    const ms = opts.futureLabel;
+    const rec = { sym: row.code || '(no code)', milestone: ms, product: row.product, feature: row.feature,
+      theme: row.theme, priority: row.priority === '' ? '' : row.priority, prob: row.prob, description: row.description };
+    (buckets[ms] = buckets[ms] || []).push(rec);
+    current.push({ sym: rec.sym, milestone: ms, feature: rec.feature, priority: rec.priority });
+    judgment.push({ sym: rec.sym, feature: rec.feature, reason: `manually-curated row (no Assessment, prev milestone "${row.milestone}") carried into ${ms} — confirm placement/inclusion` });
+  }
+
   const tail = [...primary.entries()]
-    .filter(([s, a]) => !isInternal(a.summary) && !/^1-Yes|^2\.1|^2\.2/.test(String(a.include)))
+    .filter(([s, a]) => !isInternal(a.summary) && !/^1-Yes|^2\.1|^2\.2/.test(String(a.include))
+      && Number.isFinite(a.priority) && a.priority <= opts.cutFuture)
     .map(([s, a]) => ({ sym: s, priority: a.priority }));
   const proposedCut = proposeCut(tail);
   const changes = detectChanges(prev, current, assessmentSyms);
+  changes.delivered = changes.delivered.filter((d) => /^SYM-\d+$/.test(String(d.sym).trim()));
   return { opts, proposedCut, buckets, newFeatures, judgment, changes };
 }
 
