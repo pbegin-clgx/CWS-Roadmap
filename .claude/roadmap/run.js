@@ -12,6 +12,7 @@ function analyze(paths, opts) {
   const primary = parseAssessment(assessPaths[0]);
   const nextAssess = assessPaths[1] ? parseAssessment(assessPaths[1]) : null;
   const prev = parsePrevSource(paths.prev);
+  const ahaAll = paths.aha ? parseAha(paths.aha) : new Map();
 
   const buckets = {}; const newFeatures = []; const judgment = []; const current = [];
   const assessMeta = {}; const deliveredByPriority = [];
@@ -60,13 +61,39 @@ function analyze(paths, opts) {
     .filter(([s, a]) => !isInternal(a.summary) && !/^1-Yes|^2\.1|^2\.2/.test(String(a.include))
       && Number.isFinite(a.priority) && a.priority <= opts.cutFuture)
     .map(([s, a]) => ({ sym: s, priority: a.priority }));
+  // Features present in the Aha export but in neither the Assessment nor the previous Source —
+  // unassessed candidates that would otherwise be missing from Source AND Backlog. Surfaced for the user to triage.
+  const unassessed = [];
+  for (const [sym, h] of ahaAll) {
+    if (assessmentSyms.has(sym) || prev.has(sym) || isInternal(h.name)) continue;
+    unassessed.push({ sym, feature: cleanName(h.name), priority: h.priority, status: h.status, release: h.release, initiative: h.initiative });
+  }
+
   const proposedCut = proposeCut(tail);
   const changes = detectChanges(prev, current, assessmentSyms);
   changes.delivered = changes.delivered.filter((d) => /^SYM-\d+$/.test(String(d.sym).trim()));
   // Merge negative-priority (shipped) features into the delivered list, de-duplicated.
   const deliveredSeen = new Set(changes.delivered.map((d) => d.sym));
   for (const d of deliveredByPriority) if (!deliveredSeen.has(d.sym)) { changes.delivered.push(d); deliveredSeen.add(d.sym); }
-  return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta };
+  return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta, unassessed };
+}
+
+// Build records for user-approved additions (features chosen from the unassessed Aha list).
+// Falls back to the Aha name/priority when the override doesn't specify them.
+function buildAdditionRecords(additions, aha, renamer, clean) {
+  return (additions || []).map((add) => {
+    const h = aha.get(add.sym) || {};
+    return {
+      sym: add.sym,
+      milestone: add.milestone,
+      product: renamer(add.product || ''),
+      feature: renamer(add.feature || clean(h.name || add.sym)),
+      theme: add.theme || '',
+      priority: (add.priority !== undefined && add.priority !== '') ? add.priority : (h.priority ?? ''),
+      prob: add.prob || '',
+      description: renamer(add.description || ''),
+    };
+  });
 }
 
 function parseArgs(argv) { const o = {}; for (let i = 0; i < argv.length; i += 2) o[argv[i].replace(/^--/, '')] = argv[i + 1]; return o; }
@@ -93,6 +120,13 @@ function main() {
       r.product = renamer(r.product); r.feature = renamer(r.feature); r.description = renamer(r.description);
       records.push(r);
     }
+    // User-approved additions from the unassessed-Aha list: inject as records and mark them New.
+    analysis.changes = analysis.changes || {};
+    analysis.changes.added = analysis.changes.added || [];
+    for (const rec of buildAdditionRecords(ov.additions, aha, renamer, cleanName)) {
+      records.push(rec);
+      analysis.changes.added.push({ sym: rec.sym, milestone: rec.milestone, feature: rec.feature });
+    }
     const order = { [analysis.opts.currentRelease]: 0, [analysis.opts.nextRelease]: 1, [analysis.opts.futureLabel]: 2 };
     records.sort((x, y) => (order[x.milestone] - order[y.milestone]) || ((parseFloat(x.priority) || 9999) - (parseFloat(y.priority) || 9999)));
     const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {} });
@@ -101,4 +135,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { analyze };
+module.exports = { analyze, buildAdditionRecords };
