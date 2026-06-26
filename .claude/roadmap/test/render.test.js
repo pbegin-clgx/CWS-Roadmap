@@ -14,13 +14,30 @@ test('sourceRows has correct header and row order', () => {
   assert.strictEqual(rows[1][6], '1-Yes');
 });
 
-test('backlogRows maps Old/New priority and 11 columns', () => {
+test('backlogRows maps Old/New priority and 12 columns incl. Change', () => {
   const rows = backlogRows(records, aha, prev);
-  assert.strictEqual(rows[0].length, 11);
-  assert.deepStrictEqual(rows[0], ['Feature reference #','Old Priority','New Priority','Feature name','Initiative name','Release name','Feature status','Effort - man days','Dev Complete Rate','Prioritization','Feature tags']);
+  assert.strictEqual(rows[0].length, 12);
+  assert.deepStrictEqual(rows[0], ['Feature reference #','Old Priority','New Priority','Feature name','Initiative name','Release name','Feature status','Effort - man days','Dev Complete Rate','Prioritization','Feature tags','Change']);
   assert.strictEqual(rows[1][1], 17); // Old Priority from prev
   assert.strictEqual(rows[1][2], 2);  // New Priority current
   assert.strictEqual(rows[1][4], 'New Payment Tracker');
+  assert.strictEqual(rows[1][11], 'Unchanged'); // no changes passed -> Unchanged
+});
+
+test('backlogRows Change column reflects change type and combines tags', () => {
+  const changes = { added: [], priorityUp: [], priorityDown: [{ sym: 'SYM-2561' }], reBucketed: [{ sym: 'SYM-2561' }], delivered: [{ sym: 'SYM-9', feature: 'Shipped thing' }] };
+  const rows = backlogRows(records, aha, prev, changes);
+  assert.strictEqual(rows[1][11], 'Priority Down, Re-bucketed'); // combined tags
+  const delivered = rows.find((r) => r[0] === 'SYM-9');
+  assert.ok(delivered, 'delivered feature appended as a row');
+  assert.strictEqual(delivered[11], 'Delivered');
+  assert.strictEqual(delivered[3], 'Shipped thing'); // feature name
+});
+
+test('backlogRows marks a brand-new feature as New', () => {
+  const changes = { added: [{ sym: 'SYM-2561' }], priorityUp: [], priorityDown: [], reBucketed: [], delivered: [] };
+  const rows = backlogRows(records, aha, prev, changes);
+  assert.strictEqual(rows[1][11], 'New');
 });
 
 test('renderChangeReport includes UP and DOWN sections', () => {
