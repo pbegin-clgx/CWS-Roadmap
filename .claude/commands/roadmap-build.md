@@ -46,6 +46,8 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
 
 6. **Report** the three output paths and a one-paragraph summary: counts per milestone, # carried vs # newly described, # added from the unassessed-Aha list, # delivered, # priority UP/DOWN, # flagged for review.
 
+The Source workbook is written with the `Source` sheet plus deck-ready tabs: `Summary` (Product × milestone matrix, bulleted cells) and `Detailed <release>` sheets (Product | Feature (SYM) | Description) for each milestone.
+
 ## Notes
 - Lower priority number = higher priority.
 - **A negative Product Priority means the feature has already shipped → it is marked Delivered and dropped from the active roadmap (appears only in the Delivered list / Backlog, never in a release bucket).**
