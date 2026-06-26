@@ -42,6 +42,44 @@ function backlogRows(records, aha, prev, changes, renamer = (s) => s, assessMeta
   return rows;
 }
 
+// ---- Deck sheets: Summary matrix + Detailed per-milestone sheets ----
+const PRODUCT_ORDER = ['Workspace', 'Estimate', 'Estimate for iOS', 'Contents', 'Reporting', 'API', 'Reinspect', 'DHA & Integrations', 'Engage Video', 'Engage Link'];
+const productRank = (p) => { const i = PRODUCT_ORDER.indexOf(p); return i === -1 ? PRODUCT_ORDER.length : i; };
+const orderedProducts = (recs) => [...new Set(recs.map((r) => r.product).filter(Boolean))].sort((a, b) => (productRank(a) - productRank(b)) || a.localeCompare(b));
+const featureWithCode = (r) => (/SYM-\d/.test(String(r.sym)) ? `${r.feature} (${r.sym})` : r.feature);
+// Excel sheet name (<=31 chars, no : \ / ? * [ ]) for a milestone's Detailed tab.
+function detailedSheetName(label) {
+  const m = String(label).match(/(\d+\.\d+)/);
+  if (m) return `Detailed ${m[1]}`;
+  if (/future/i.test(label)) return 'Detailed Future';
+  return ('Detailed ' + String(label).replace(/[:\\/?*[\]]/g, '')).slice(0, 31);
+}
+
+// Product × milestone matrix; each cell is a newline-separated bulleted list of feature names (priority order).
+function summaryRows(records, milestones) {
+  const grid = {};
+  for (const r of records) {
+    if (!r.product) continue;
+    (grid[r.product] = grid[r.product] || {});
+    (grid[r.product][r.milestone] = grid[r.product][r.milestone] || []).push(r.feature);
+  }
+  const rows = [['Product', ...milestones]];
+  for (const p of orderedProducts(records)) {
+    rows.push([p, ...milestones.map((m) => ((grid[p] && grid[p][m]) || []).map((f) => `• ${f}`).join('\n'))]);
+  }
+  return rows;
+}
+
+// One Detailed sheet's rows for a milestone: Product | Feature (SYM) | Description, grouped by product (canonical order), priority order within.
+function detailedRows(records, milestone) {
+  const inM = records.filter((r) => r.milestone === milestone);
+  const rows = [['Product', 'Feature', 'Description']];
+  for (const p of orderedProducts(inM)) {
+    for (const r of inM.filter((x) => x.product === p)) rows.push([p, featureWithCode(r), r.description]);
+  }
+  return rows;
+}
+
 function section(title, lines) { return lines.length ? `## ${title}\n${lines.join('\n')}\n\n` : ''; }
 
 function renderChangeReport(ch) {
@@ -54,14 +92,20 @@ function renderChangeReport(ch) {
   return md;
 }
 
-function writeOutputs(dir, dateStr, { records, aha, prev, changes, renamer, assessMeta }) {
+function writeOutputs(dir, dateStr, { records, aha, prev, changes, renamer, assessMeta, opts }) {
   const srcPath = path.join(dir, `Product Roadmap Source ${dateStr}.xlsx`);
   const blPath = path.join(dir, `Claims Product Backlog ${dateStr}.xlsx`);
   const repPath = path.join(dir, `Roadmap Change Report ${dateStr}.md`);
-  writeSheets(srcPath, { Source: sourceRows(records) });
+  const sheets = { Source: sourceRows(records) };
+  if (opts) {
+    const milestones = [opts.currentRelease, opts.nextRelease, opts.futureLabel];
+    sheets.Summary = summaryRows(records, milestones);
+    for (const m of milestones) sheets[detailedSheetName(m)] = detailedRows(records, m);
+  }
+  writeSheets(srcPath, sheets);
   writeSheets(blPath, { Backlog: backlogRows(records, aha, prev, changes, renamer, assessMeta) });
   fs.writeFileSync(repPath, renderChangeReport(changes));
   return { srcPath, blPath, repPath };
 }
 
-module.exports = { sourceRows, backlogRows, renderChangeReport, writeOutputs };
+module.exports = { sourceRows, backlogRows, renderChangeReport, writeOutputs, summaryRows, detailedRows, detailedSheetName };
