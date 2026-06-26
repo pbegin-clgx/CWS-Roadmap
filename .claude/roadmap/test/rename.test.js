@@ -1,6 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { makeRenamer } = require('../lib/rename');
+const path = require('path');
+const { makeRenamer, loadRenameMap } = require('../lib/rename');
 
 test('makeRenamer applies ordered literal replacements', () => {
   const r = makeRenamer([
@@ -28,4 +29,11 @@ test('makeRenamer with empty map is identity and tolerates null', () => {
   assert.strictEqual(r('x'), 'x');
   assert.strictEqual(r(''), '');
   assert.strictEqual(r(null), null);
+});
+
+test('shipped renames.json unifies iOS naming (incl. the "Estimate iOS" abbreviation) and is idempotent', () => {
+  const r = makeRenamer(loadRenameMap(path.join(__dirname, '..', 'renames.json')));
+  assert.strictEqual(r('Estimate Mobile: Autosave Photos'), 'Estimate for iOS: Autosave Photos');
+  assert.strictEqual(r('Estimate iOS: Duplicate items'), 'Estimate for iOS: Duplicate items');
+  assert.strictEqual(r('Estimate for iOS: Add Video'), 'Estimate for iOS: Add Video'); // already correct, unchanged
 });
