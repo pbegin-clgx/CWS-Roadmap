@@ -134,8 +134,10 @@ function main() {
     const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {}, opts: analysis.opts });
     console.log(`finalize: wrote\n ${out.srcPath}\n ${out.blPath}\n ${out.repPath}`);
   } else if (cmd === 'deck') {
-    const themePath = a.theme || path.join(__dirname, 'deck-theme.json');
-    const theme = loadTheme(themePath);
+    let theme;
+    try {
+      theme = loadTheme(a.theme || path.join(__dirname, 'deck-theme.json'));
+    } catch (e) { console.error(`deck failed: ${e.message}`); process.exit(1); }
     const out = path.join(a.outdir, `Product Roadmap Deck ${a.date}.pptx`);
     deckFromWorkbook(a.source, theme, out)
       .then((p) => console.log(`deck: wrote\n ${p}`))
