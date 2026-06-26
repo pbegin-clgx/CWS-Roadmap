@@ -24,17 +24,17 @@ function sourceRows(records) {
   return rows;
 }
 
-function backlogRows(records, aha, prev, changes) {
+function backlogRows(records, aha, prev, changes, renamer = (s) => s) {
   const rows = [BACKLOG_HEADER.slice()];
   for (const r of records) {
     const a = aha.get(r.sym) || {};
     const p = prev.get(r.sym) || {};
-    rows.push([r.sym, (p.priority ?? ''), r.priority, a.name || r.feature, a.initiative || '', a.release || '', a.status || '', '', '', a.prioritization || '', '', changeLabel(r.sym, changes)]);
+    rows.push([r.sym, (p.priority ?? ''), r.priority, renamer(a.name || r.feature), a.initiative || '', a.release || '', a.status || '', '', '', a.prioritization || '', '', changeLabel(r.sym, changes)]);
   }
   // Append delivered features (shipped, off the active roadmap) so the Backlog is a full change log.
   for (const d of (changes && changes.delivered) || []) {
     const a = aha.get(d.sym) || {};
-    rows.push([d.sym, '', '', a.name || d.feature, a.initiative || '', a.release || '', a.status || '', '', '', a.prioritization || '', '', 'Delivered']);
+    rows.push([d.sym, '', '', renamer(a.name || d.feature), a.initiative || '', a.release || '', a.status || '', '', '', a.prioritization || '', '', 'Delivered']);
   }
   return rows;
 }
@@ -51,12 +51,12 @@ function renderChangeReport(ch) {
   return md;
 }
 
-function writeOutputs(dir, dateStr, { records, aha, prev, changes }) {
+function writeOutputs(dir, dateStr, { records, aha, prev, changes, renamer }) {
   const srcPath = path.join(dir, `Product Roadmap Source ${dateStr}.xlsx`);
   const blPath = path.join(dir, `Claims Product Backlog ${dateStr}.xlsx`);
   const repPath = path.join(dir, `Roadmap Change Report ${dateStr}.md`);
   writeSheets(srcPath, { Source: sourceRows(records) });
-  writeSheets(blPath, { Backlog: backlogRows(records, aha, prev, changes) });
+  writeSheets(blPath, { Backlog: backlogRows(records, aha, prev, changes, renamer) });
   fs.writeFileSync(repPath, renderChangeReport(changes));
   return { srcPath, blPath, repPath };
 }

@@ -2,6 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { sourceRows, backlogRows, renderChangeReport } = require('../lib/render');
+const { makeRenamer } = require('../lib/rename');
 
 const records = [{ sym: 'SYM-2561', milestone: 'v8.7 (Q3 2026)', product: 'Workspace', feature: 'Autosave Payment Progress', theme: 'UX', priority: 2, prob: '1-Yes', description: 'Autosaves.' }];
 const aha = new Map([['SYM-2561', { name: '92481 - Autosave - Implement', initiative: 'New Payment Tracker', release: 'Release 8.6.50x', status: 'In development', prioritization: 'Liberty' }]]);
@@ -32,6 +33,14 @@ test('backlogRows Change column reflects change type and combines tags', () => {
   assert.ok(delivered, 'delivered feature appended as a row');
   assert.strictEqual(delivered[11], 'Delivered');
   assert.strictEqual(delivered[3], 'Shipped thing'); // feature name
+});
+
+test('backlogRows applies the renamer to the Aha-sourced feature name', () => {
+  const recs = [{ sym: 'SYM-3', milestone: 'v8.7 (Q3 2026)', product: 'Estimate for iOS', feature: 'X', theme: '', priority: 1, prob: '1-Yes', description: '' }];
+  const ah = new Map([['SYM-3', { name: '87374 - Estimate Mobile - Autosave Photos - Implement' }]]);
+  const renamer = makeRenamer([{ from: 'Estimate Mobile', to: 'Estimate for iOS' }]);
+  const rows = backlogRows(recs, ah, new Map(), {}, renamer);
+  assert.strictEqual(rows[1][3], '87374 - Estimate for iOS - Autosave Photos - Implement');
 });
 
 test('backlogRows marks a brand-new feature as New', () => {
