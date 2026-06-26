@@ -28,6 +28,21 @@ test('parseAssessment maps SYM rows and normalizes blank priority to Infinity', 
   fs.unlinkSync(f);
 });
 
+test('parseAha filters non-SYM rows and extracts name, prioritization, and initiative', () => {
+  const f = tmp('aha');
+  writeSheets(f, { 'Report': [
+    ['Feature reference #','test','Feature name','Product Priority','Feature status','Release name','Feature assigned to','Designer','Prioritization','Branch','ARC','Initiative name'],
+    ['SYM-2561','','Claims Workspace Enhancement','2','Green','Release 8.6.50x','','','High','','','Q3 Strategic Initiative'],
+    ['not-a-sym','','Another Feature','1','Green','Release 8.6.50x','','','Medium','','','Q3 Strategic Initiative'],
+  ]});
+  const m = parseAha(f);
+  assert.strictEqual(m.size, 1);
+  assert.strictEqual(m.get('SYM-2561').name, 'Claims Workspace Enhancement');
+  assert.strictEqual(m.get('SYM-2561').prioritization, 'High');
+  assert.strictEqual(m.get('SYM-2561').initiative, 'Q3 Strategic Initiative');
+  fs.unlinkSync(f);
+});
+
 test('parsePrevSource keys by Feature Code with carry-forward fields', () => {
   const f = tmp('prev');
   writeSheets(f, { 'Source': [
