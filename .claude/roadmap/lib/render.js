@@ -29,12 +29,12 @@ function backlogRows(records, aha, prev, changes, renamer = (s) => s) {
   for (const r of records) {
     const a = aha.get(r.sym) || {};
     const p = prev.get(r.sym) || {};
-    rows.push([r.sym, (p.priority ?? ''), r.priority, renamer(a.name || r.feature), a.initiative || '', a.release || '', a.status || '', '', '', a.prioritization || '', '', changeLabel(r.sym, changes)]);
+    rows.push([r.sym, (p.priority ?? ''), r.priority, renamer(a.name || r.feature), renamer(a.initiative || ''), a.release || '', a.status || '', '', '', a.prioritization || '', '', changeLabel(r.sym, changes)]);
   }
   // Append delivered features (shipped, off the active roadmap) so the Backlog is a full change log.
   for (const d of (changes && changes.delivered) || []) {
     const a = aha.get(d.sym) || {};
-    rows.push([d.sym, '', '', renamer(a.name || d.feature), a.initiative || '', a.release || '', a.status || '', '', '', a.prioritization || '', '', 'Delivered']);
+    rows.push([d.sym, '', '', renamer(a.name || d.feature), renamer(a.initiative || ''), a.release || '', a.status || '', '', '', a.prioritization || '', '', 'Delivered']);
   }
   return rows;
 }
