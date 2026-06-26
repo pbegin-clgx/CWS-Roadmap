@@ -10,6 +10,8 @@ function headerCells(header, theme) {
 }
 
 function addDivider(pptx, theme, title) {
+  // Dividers are full-bleed dark (dk1); intentionally NOT on the BRAND master —
+  // the master's light footer/slide-number would be low-contrast on this background.
   const s = pptx.addSlide();
   s.background = { color: theme.colors.dk1 };
   s.addText(String(title), { x: 0.6, y: 2.7, w: 12.1, h: 1.3, fontSize: 40, bold: true, color: theme.colors.lt1, fontFace: theme.majorFont });
