@@ -1,0 +1,9 @@
+{
+  "colors": {
+    "dk1": "1E1405", "lt1": "F7EFE2", "dk2": "000000", "lt2": "FFFFFF",
+    "accent1": "FFCD2E", "accent2": "FF6E80", "accent3": "FF8E65",
+    "accent4": "DD37D2", "accent5": "148DEF", "accent6": "339B62"
+  },
+  "majorFont": "TWK Everett",
+  "minorFont": "TWK Everett"
+}
