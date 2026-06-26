@@ -2,6 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { sourceRows, backlogRows, renderChangeReport } = require('../lib/render');
+const { makeRenamer } = require('../lib/rename');
 
 const records = [{ sym: 'SYM-2561', milestone: 'v8.7 (Q3 2026)', product: 'Workspace', feature: 'Autosave Payment Progress', theme: 'UX', priority: 2, prob: '1-Yes', description: 'Autosaves.' }];
 const aha = new Map([['SYM-2561', { name: '92481 - Autosave - Implement', initiative: 'New Payment Tracker', release: 'Release 8.6.50x', status: 'In development', prioritization: 'Liberty' }]]);
@@ -14,13 +15,38 @@ test('sourceRows has correct header and row order', () => {
   assert.strictEqual(rows[1][6], '1-Yes');
 });
 
-test('backlogRows maps Old/New priority and 11 columns', () => {
+test('backlogRows maps Old/New priority and 12 columns incl. Change', () => {
   const rows = backlogRows(records, aha, prev);
-  assert.strictEqual(rows[0].length, 11);
-  assert.deepStrictEqual(rows[0], ['Feature reference #','Old Priority','New Priority','Feature name','Initiative name','Release name','Feature status','Effort - man days','Dev Complete Rate','Prioritization','Feature tags']);
+  assert.strictEqual(rows[0].length, 12);
+  assert.deepStrictEqual(rows[0], ['Feature reference #','Old Priority','New Priority','Feature name','Initiative name','Release name','Feature status','Effort - man days','Dev Complete Rate','Prioritization','Feature tags','Change']);
   assert.strictEqual(rows[1][1], 17); // Old Priority from prev
   assert.strictEqual(rows[1][2], 2);  // New Priority current
   assert.strictEqual(rows[1][4], 'New Payment Tracker');
+  assert.strictEqual(rows[1][11], 'Unchanged'); // no changes passed -> Unchanged
+});
+
+test('backlogRows Change column reflects change type and combines tags', () => {
+  const changes = { added: [], priorityUp: [], priorityDown: [{ sym: 'SYM-2561' }], reBucketed: [{ sym: 'SYM-2561' }], delivered: [{ sym: 'SYM-9', feature: 'Shipped thing' }] };
+  const rows = backlogRows(records, aha, prev, changes);
+  assert.strictEqual(rows[1][11], 'Priority Down, Re-bucketed'); // combined tags
+  const delivered = rows.find((r) => r[0] === 'SYM-9');
+  assert.ok(delivered, 'delivered feature appended as a row');
+  assert.strictEqual(delivered[11], 'Delivered');
+  assert.strictEqual(delivered[3], 'Shipped thing'); // feature name
+});
+
+test('backlogRows applies the renamer to the Aha-sourced feature name', () => {
+  const recs = [{ sym: 'SYM-3', milestone: 'v8.7 (Q3 2026)', product: 'Estimate for iOS', feature: 'X', theme: '', priority: 1, prob: '1-Yes', description: '' }];
+  const ah = new Map([['SYM-3', { name: '87374 - Estimate Mobile - Autosave Photos - Implement' }]]);
+  const renamer = makeRenamer([{ from: 'Estimate Mobile', to: 'Estimate for iOS' }]);
+  const rows = backlogRows(recs, ah, new Map(), {}, renamer);
+  assert.strictEqual(rows[1][3], '87374 - Estimate for iOS - Autosave Photos - Implement');
+});
+
+test('backlogRows marks a brand-new feature as New', () => {
+  const changes = { added: [{ sym: 'SYM-2561' }], priorityUp: [], priorityDown: [], reBucketed: [], delivered: [] };
+  const rows = backlogRows(records, aha, prev, changes);
+  assert.strictEqual(rows[1][11], 'New');
 });
 
 test('renderChangeReport includes UP and DOWN sections', () => {

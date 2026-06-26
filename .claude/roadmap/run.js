@@ -1,9 +1,11 @@
 const fs = require('fs');
+const path = require('path');
 const { parseAssessment, parseAha, parsePrevSource, parsePrevSourceRows, cleanName } = require('./lib/parse');
 const { classify, isInternal } = require('./lib/bucket');
 const { proposeCut, applyNextAssessment } = require('./lib/propose');
 const { detectChanges } = require('./lib/changes');
 const { writeOutputs } = require('./lib/render');
+const { makeRenamer, loadRenameMap } = require('./lib/rename');
 
 function analyze(paths, opts) {
   const assessPaths = paths.assess;
@@ -70,16 +72,19 @@ function main() {
     const analysis = JSON.parse(fs.readFileSync(a.analysis, 'utf8'));
     const ov = a.overrides ? JSON.parse(fs.readFileSync(a.overrides, 'utf8')) : {};
     const aha = parseAha(a.aha); const prev = parsePrevSource(a.prev);
+    // Legacy product-name renames (e.g. "Estimate Mobile" -> "Estimate for iOS"); configurable via --renames or default renames.json
+    const renamer = makeRenamer(loadRenameMap(a.renames || path.join(__dirname, 'renames.json')));
     const records = [];
     for (const recs of Object.values(analysis.buckets)) for (const r of recs) {
       const d = (ov.descriptions || {})[r.sym];
       if (d) { r.product = d.product ?? r.product; r.theme = d.theme ?? r.theme; r.description = d.description ?? r.description; }
       if ((ov.milestoneOverrides || {})[r.sym]) r.milestone = ov.milestoneOverrides[r.sym];
+      r.product = renamer(r.product); r.feature = renamer(r.feature); r.description = renamer(r.description);
       records.push(r);
     }
     const order = { [analysis.opts.currentRelease]: 0, [analysis.opts.nextRelease]: 1, [analysis.opts.futureLabel]: 2 };
     records.sort((x, y) => (order[x.milestone] - order[y.milestone]) || ((parseFloat(x.priority) || 9999) - (parseFloat(y.priority) || 9999)));
-    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes });
+    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer });
     console.log(`finalize: wrote\n ${out.srcPath}\n ${out.blPath}\n ${out.repPath}`);
   } else { console.error('usage: run.js analyze|finalize ...'); process.exit(1); }
 }
