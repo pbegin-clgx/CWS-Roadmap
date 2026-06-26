@@ -3,6 +3,13 @@ const { readSheet } = require('./xlsx-io');
 const isSym = (s) => /^SYM-\d/.test(String(s).trim());
 const num = (v) => (v === '' || v === '-' || v == null) ? Infinity : parseFloat(v);
 const clean1 = (s) => String(s).replace(/\r?\n/g, ' ').trim();
+// Average of three story-completion fractions (Dev/QA/BT). Missing values count as 0;
+// returns '' only when all three are non-numeric (no data to report).
+const avg3 = (a, b, c) => {
+  const vals = [a, b, c].map((v) => parseFloat(v));
+  if (!vals.some(Number.isFinite)) return '';
+  return vals.map((v) => (Number.isFinite(v) ? v : 0)).reduce((s, v) => s + v, 0) / 3;
+};
 const cleanName = (s) => clean1(s).replace(/^\s*\d+[A-Z]?\s*-\s*/, '').replace(/\s*-\s*Implement\s*$/i, '').trim();
 
 function parseAssessment(path, sheetName = 'Release Assessment') {
@@ -11,7 +18,8 @@ function parseAssessment(path, sheetName = 'Release Assessment') {
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i]; const sym = String(r[0]).trim();
     if (!isSym(sym)) continue;
-    m.set(sym, { include: clean1(r[9]), releaseInAha: clean1(r[3]), priority: num(r[5]), summary: clean1(r[2]), effort: r[12] });
+    // Effort = col M (Effort Estimate, idx 12); Dev Complete Rate = avg of cols Q/R/S (Dev/QA/BT Stories Completed, idx 16/17/18)
+    m.set(sym, { include: clean1(r[9]), releaseInAha: clean1(r[3]), priority: num(r[5]), summary: clean1(r[2]), effort: r[12], devComplete: avg3(r[16], r[17], r[18]) });
   }
   return m;
 }

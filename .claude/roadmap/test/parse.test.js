@@ -24,7 +24,19 @@ test('parseAssessment maps SYM rows and normalizes blank priority to Infinity', 
   assert.strictEqual(m.size, 2);
   assert.strictEqual(m.get('SYM-2561').include, '1-Yes');
   assert.strictEqual(m.get('SYM-2561').priority, 2);
+  assert.strictEqual(m.get('SYM-2561').effort, 100);
   assert.strictEqual(m.get('SYM-2497').priority, Infinity);
+  fs.unlinkSync(f);
+});
+
+test('parseAssessment computes devComplete as the average of cols Q/R/S (idx 16/17/18)', () => {
+  const f = tmp('assess-dc');
+  const header = ['Aha','FB','Summary','Release in Aha','Priority Category','Product Priority','Project Code','Branch','Status','Include in release?','Dev Comments','Craig','Effort Estimate','DevDays','QADays','BSADays','Dev Stories Completed','QA Stories Completed','BT Stories Completed'];
+  const row = (sym, dev, qa, bt) => { const r = new Array(19).fill(''); r[0]=sym; r[2]=sym+' - Implement'; r[5]=1; r[9]='1-Yes'; r[12]=50; r[16]=dev; r[17]=qa; r[18]=bt; return r; };
+  writeSheets(f, { 'Release Assessment': [header, row('SYM-1', 0.9, 0, 0.3), row('SYM-2', '', '', '')] });
+  const m = parseAssessment(f);
+  assert.ok(Math.abs(m.get('SYM-1').devComplete - (0.9 + 0 + 0.3) / 3) < 1e-9);
+  assert.strictEqual(m.get('SYM-2').devComplete, ''); // all blank -> blank
   fs.unlinkSync(f);
 });
 

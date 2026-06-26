@@ -49,7 +49,7 @@ Building the Source workbook is the biggest time sink. A backtest of the 8.6→8
 
 ### Outputs (written to `Roadmap/`, named `<name> <YYYYMMDD>.xlsx`)
 - `Product Roadmap Source <YYYYMMDD>.xlsx` — `Source` sheet populated; columns identical to the existing template.
-- `Claims Product Backlog <YYYYMMDD>.xlsx` — the CS/Sales deliverable. Columns reproduce the latest distributed Backlog exactly: `Feature reference #`, `Old Priority`, `New Priority`, `Feature name`, `Initiative name`, `Release name`, `Feature status`, `Effort - man days`, `Dev Complete Rate`, `Prioritization`, `Feature tags`. (`Old Priority` = previous Source priority; `New Priority` = current Product Priority.)
+- `Claims Product Backlog <YYYYMMDD>.xlsx` — the CS/Sales deliverable. Columns: `Feature reference #`, `Old Priority`, `New Priority`, `Feature name`, `Initiative name`, `Release name`, `Feature status`, `Effort - man days`, `Dev Complete Rate`, `Prioritization`, `Feature tags`, `Change`. (`Old Priority` = previous Source priority; `New Priority` = current Product Priority. `Effort - man days` = Assessment col M / Effort Estimate; `Dev Complete Rate` = average of Assessment cols Q/R/S = Dev/QA/BT Stories Completed. `Change` = New / Priority Up / Priority Down / Re-bucketed / Unchanged / Delivered, tags combined when several apply.) Delivered features are appended as rows so the Backlog doubles as a full change log.
 - `Roadmap Change Report <YYYYMMDD>.md` — delivered, new, priority changes, re-bucketing (see §6).
 
 ## 4. The bucketing algorithm (validated)
@@ -76,10 +76,12 @@ Keyed by feature code (SYM). Statuses come from `Include in release?`.
 
 **Always applied:**
 ```
+negative Product Priority                 → Delivered (shipped; dropped from roadmap)
 internal items (translations, API back-merges, library/Angular/ClaimWrapper
     migrations, Intune, analytics SDKs)   → dropped
 features in previous Source but absent from any Assessment → "Delivered" (listed, not lost)
 ```
+A negative Product Priority in the Assessment marks a feature that has already shipped: it is excluded from all release buckets and added to the Delivered list (so it appears in the Change Report and as a `Delivered` row in the Backlog, never on the active roadmap).
 
 The cut-lines are **fit per cycle**, not hard-coded: the tool sorts the `3-No` tail by priority and proposes `cut88` near the top-half boundary; Pascal adjusts and it re-runs. Validated cut for the 8.7 cycle (cut-line fallback mode): `cut88=72`, `cutFuture=110`.
 

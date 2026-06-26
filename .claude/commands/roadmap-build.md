@@ -45,5 +45,9 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
 
 ## Notes
 - Lower priority number = higher priority.
+- **A negative Product Priority means the feature has already shipped → it is marked Delivered and dropped from the active roadmap (appears only in the Delivered list / Backlog, never in a release bucket).**
+- Backlog `Effort - man days` comes from the Assessment col M (Effort Estimate); `Dev Complete Rate` is the average of Assessment cols Q/R/S (Dev/QA/BT Stories Completed). Both are carried in `analysis.assessMeta` and written by finalize.
+- Legacy product names are normalized via `renames.json` (e.g. Estimate Mobile / Mobile Estimating → Estimate for iOS); edit that file to add future renames.
 - Never write outputs before the user approves the review queue.
+- If finalize fails with `EBUSY` / file locked, the target xlsx is open in Excel — ask the user to close it, then re-run finalize.
 - Internal/tech-debt items and features below the Future cut-line are dropped silently from the roadmap and are NOT surfaced as a "removed" list (by design).

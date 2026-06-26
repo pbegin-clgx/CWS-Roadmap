@@ -49,6 +49,13 @@ test('backlogRows marks a brand-new feature as New', () => {
   assert.strictEqual(rows[1][11], 'New');
 });
 
+test('backlogRows fills Effort (idx 7) and Dev Complete Rate (idx 8) from assessMeta', () => {
+  const assessMeta = { 'SYM-2561': { effort: 100, devComplete: 0.4 } };
+  const rows = backlogRows(records, aha, prev, {}, undefined, assessMeta);
+  assert.strictEqual(rows[1][7], 100); // Effort - man days
+  assert.strictEqual(rows[1][8], 0.4); // Dev Complete Rate
+});
+
 test('renderChangeReport includes UP and DOWN sections', () => {
   const md = renderChangeReport({ delivered: [{ sym: 'SYM-1', feature: 'X' }], added: [], priorityUp: [{ sym: 'SYM-2', feature: 'Y', from: 17, to: 2 }], priorityDown: [], reBucketed: [] });
   assert.match(md, /## Priority Changed UP/);
