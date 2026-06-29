@@ -5,7 +5,7 @@ function proposeCut(tail) {
     const mid = Math.floor((ps.length - 1) / 2);
     cut88 = ps.length % 2 ? ps[mid] : Math.round((ps[mid] + ps[mid + 1]) / 2);
   }
-  return { cut88, cutFuture: 110 };
+  return { cut88, cutFuture: 100 };
 }
 
 function applyNextAssessment(milestone, sym, nextAssess, { nextRelease }) {

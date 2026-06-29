@@ -138,13 +138,13 @@ const { summaryTable, detailedTable } = require('../lib/deck-data');
 
 test('summaryTable splits header from product rows and drops blank rows', () => {
   const rows = [
-    ['Product', 'v8.7 (Q3 2026)', 'v8.8 (Q4 2026)', 'Future (Q4 2026 - Q1 2027)'],
+    ['Product', 'v8.7 (Q3 2026)', 'v8.8 (Q4 2026)', 'Future (Q1-Q2 2027)'],
     ['Workspace', '• A\n• B', '• C', ''],
     ['', '', '', ''],
     ['Estimate', '• D', '', '• E'],
   ];
   const t = summaryTable(rows);
-  assert.deepStrictEqual(t.header, ['Product', 'v8.7 (Q3 2026)', 'v8.8 (Q4 2026)', 'Future (Q4 2026 - Q1 2027)']);
+  assert.deepStrictEqual(t.header, ['Product', 'v8.7 (Q3 2026)', 'v8.8 (Q4 2026)', 'Future (Q1-Q2 2027)']);
   assert.strictEqual(t.body.length, 2); // blank row dropped
   assert.deepStrictEqual(t.body[0], ['Workspace', '• A\n• B', '• C', '']);
 });
@@ -235,7 +235,7 @@ test('deckFromWorkbook builds a themed deck with section, summary, and detailed 
   const src = tmp('source', 'xlsx'); const out = tmp('deck', 'pptx');
   writeSheets(src, {
     Summary: [
-      ['Product', 'v8.7 (Q3 2026)', 'v8.8 (Q4 2026)', 'Future (Q4 2026 - Q1 2027)'],
+      ['Product', 'v8.7 (Q3 2026)', 'v8.8 (Q4 2026)', 'Future (Q1-Q2 2027)'],
       ['Workspace', '• Autosave', '', ''],
     ],
     'Detailed 8.7': [
