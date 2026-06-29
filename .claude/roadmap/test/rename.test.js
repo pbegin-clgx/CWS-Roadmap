@@ -36,4 +36,7 @@ test('shipped renames.json unifies iOS naming (incl. the "Estimate iOS" abbrevia
   assert.strictEqual(r('Estimate Mobile: Autosave Photos'), 'Estimate for iOS: Autosave Photos');
   assert.strictEqual(r('Estimate iOS: Duplicate items'), 'Estimate for iOS: Duplicate items');
   assert.strictEqual(r('Estimate for iOS: Add Video'), 'Estimate for iOS: Add Video'); // already correct, unchanged
+  // "Mobile Claims" (legacy Claims Estimate, desktop) -> "Claims Estimate", with the double-Estimate guard
+  assert.strictEqual(r('Mobile Claims Modernization - Icons Redesign'), 'Claims Estimate Modernization - Icons Redesign');
+  assert.strictEqual(r('Update Mobile Claims Estimate general appearance'), 'Update Claims Estimate general appearance'); // not "Claims Estimate Estimate"
 });

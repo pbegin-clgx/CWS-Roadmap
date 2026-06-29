@@ -5,5 +5,7 @@
   { "from": "Estimate iOS", "to": "Estimate for iOS" },
   { "from": "Capture Questionnaire as Assembly", "to": "Estimate for iOS Questionnaire as Assembly" },
   { "from": "CAPTURE -", "to": "Estimate for iOS -" },
-  { "from": "Capture app", "to": "Estimate for iOS" }
+  { "from": "Capture app", "to": "Estimate for iOS" },
+  { "from": "Mobile Claims Estimate", "to": "Claims Estimate" },
+  { "from": "Mobile Claims", "to": "Claims Estimate" }
 ]
