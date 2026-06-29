@@ -63,16 +63,18 @@ Keyed by feature code (SYM). Statuses come from `Include in release?`.
 
 **Next release** placement has two modes:
 - **If a next-release Assessment exists** (e.g. an 8.8 Assessment alongside the 8.7 one), drive it the same way as the current release — its own `Include` status (`1-Yes / 2.1 / 2.2 → nextRelease`). This is the preferred path once the next Assessment is in hand.
-- **Otherwise (cut-line fallback)** — derive next-release from the leftover tail of the current Assessment:
+- **Otherwise (single roadmap-window line)** — derive next-release from the current Assessment using one cut-line, `cutFuture` (default 110), which bounds the whole roadmap window:
 ```
-2.3 / 2.4                                 → nextRelease   (any priority)
+2.3 / 2.4-Maybe:
+    Product Priority ≤ cutFuture          → nextRelease
+    otherwise                             → Future
 3-No:
-    Release in Aha = nextRelease          → nextRelease
+    Release in Aha = nextRelease          → nextRelease   (explicit Aha tag is the ONLY priority-independent path in)
     Release in Aha = release beyond next  → Future
-    Product Priority ≤ cut88              → nextRelease
     Product Priority ≤ cutFuture          → Future
     otherwise                             → dropped (not shown)
 ```
+**Refinement (2026-06-29):** the next release is kept lean. "Maybe" items only reach it within the roadmap window (priority ≤ `cutFuture`); lower-priority Maybes fall to Future. `3-No` items reach the next release **only** when Aha explicitly tags them to it — there is no longer a priority-based promotion of `3-No` to the next release. (This retired the former separate `cut88` knob; a single `cutFuture` line now governs the window.)
 
 **Always applied:**
 ```
@@ -83,7 +85,7 @@ features in previous Source but absent from any Assessment → "Delivered" (list
 ```
 A negative Product Priority in the Assessment marks a feature that has already shipped: it is excluded from all release buckets and added to the Delivered list (so it appears in the Change Report and as a `Delivered` row in the Backlog, never on the active roadmap).
 
-The cut-lines are **fit per cycle**, not hard-coded: the tool sorts the `3-No` tail by priority and proposes `cut88` near the top-half boundary; Pascal adjusts and it re-runs. Validated cut for the 8.7 cycle (cut-line fallback mode): `cut88=72`, `cutFuture=110`.
+The `cutFuture` line is **tunable per cycle**, not hard-coded; Pascal adjusts it and the tool re-runs. Default `cutFuture=110`.
 
 ## 5. Carry-forward & descriptions
 

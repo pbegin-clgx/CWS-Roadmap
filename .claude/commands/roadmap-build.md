@@ -25,7 +25,7 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
    Read `analysis.json`.
 
 3. **Present the review queue** (do NOT write outputs yet):
-   - **Cut-line:** show `proposedCut` and the sorted `3-No`/`2.x` tail around it; ask the user to confirm or adjust `cut88`/`cutFuture`. If changed, re-run `analyze` with `--cut88/--cutFuture` so re-bucketing reflects the new lines.
+   - **Cut-line:** the roadmap window is bounded by a single line, `cutFuture` (default 110). "Maybe" (2.3/2.4) items reach the next release only at priority ≤ cutFuture (lower-priority Maybes → Future); `3-No` items reach the next release ONLY via an explicit Aha next-release tag (no priority promotion). Show the next-release/Future boundary around `cutFuture` and ask the user to confirm or adjust it; if changed, re-run `analyze --cutFuture <n>`.
    - **Judgment items:** list `analysis.judgment` with the reason; ask the user's call for each (keep / move to a named milestone / drop).
    - **New descriptions:** for each entry in `analysis.newFeatures`, draft a short Description **in the house style from `product-team-claude/CLAUDE.md`** (personas/terminology/example requirements) plus a proposed Product and Strategic Theme from the known sets. Present for approval/edit.
    - **Unassessed Aha features:** list `analysis.unassessed` — features in the Aha export but in neither the Assessment nor the previous Source (they would otherwise be missing from Source AND Backlog). For each, show its Aha priority, status, release, and initiative. Ask the user **which (if any) to add and at which milestone**. For each chosen feature, draft a Product / Strategic Theme / Description in house style.
