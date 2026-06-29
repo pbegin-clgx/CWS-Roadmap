@@ -21,6 +21,7 @@ function loadTheme(themePath) {
       colW: summary.colW || null,                 // null -> deck.js even-split default
       productColor: summary.productColor || colors.dk1,
       bulletChar: summary.bulletChar || '•',
+      linesPerSlide: summary.linesPerSlide || 18,  // manual-pagination budget (feature lines per Summary slide)
     },
   };
 }

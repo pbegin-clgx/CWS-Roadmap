@@ -30,28 +30,43 @@ function addTableSlide(pptx, theme, title, table, colW) {
   });
 }
 
-// The Summary slide is styled per the corporate edits: product names in the accent color, real
-// bulleted feature lists, and the configured column widths (theme.summary).
-function addSummarySlide(pptx, theme, title, table) {
+// The Summary is styled per the corporate edits: product names in the accent color, real bulleted
+// feature lists, and the configured column widths (theme.summary). We paginate MANUALLY (one table
+// per slide, NO autoPage) — pptxgenjs's autoPage splits bulleted runs into per-WORD paragraphs,
+// which would put a bullet on every word. Products are packed onto a slide up to a line budget.
+function addSummarySlides(pptx, theme, title, table) {
   const sm = theme.summary || {};
-  const s = pptx.addSlide({ masterName: 'BRAND' });
-  s.addText(String(title), { x: 0.4, y: 0.3, w: 12.5, h: 0.6, fontSize: 22, bold: true, color: theme.colors.dk1, fontFace: theme.majorFont });
-  const rows = [headerCells(table.header, theme)];
-  for (const r of table.body) {
-    const product = { text: String(r[0]), options: { bold: true, color: sm.productColor || theme.colors.dk1 } };
-    const cells = r.slice(1).map((cellText) => {
-      const lines = String(cellText).split('\n').map((ln) => ln.replace(/^•\s*/, '').trim()).filter(Boolean);
-      if (!lines.length) return '';
-      return { text: lines.map((ln) => ({ text: ln, options: { bullet: { characters: sm.bulletChar || '•' }, breakLine: true } })) };
-    });
-    rows.push([product, ...cells]);
-  }
-  s.addTable(rows, {
-    x: 0.4, y: 1.05, w: 12.5, colW: sm.colW || undefined,
-    autoPage: true, autoPageRepeatHeader: true, newSlideStartY: 0.6,
-    border: { type: 'solid', pt: 0.5, color: GRID },
-    fontFace: theme.minorFont, fontSize: 11, color: theme.colors.dk1, valign: 'top',
+  const budget = sm.linesPerSlide || 18;
+  // Parse each product row into its bullet lines per milestone, with a height "weight".
+  const productRows = table.body.map((r) => {
+    const milestoneCells = r.slice(1).map((cellText) => String(cellText).split('\n').map((ln) => ln.replace(/^•\s*/, '').trim()).filter(Boolean));
+    return { product: String(r[0]), milestoneCells, weight: Math.max(1, ...milestoneCells.map((c) => c.length)) };
   });
+  // Pack products into slide-sized chunks.
+  const chunks = []; let cur = []; let acc = 0;
+  for (const pr of productRows) {
+    if (cur.length && acc + pr.weight > budget) { chunks.push(cur); cur = []; acc = 0; }
+    cur.push(pr); acc += pr.weight;
+  }
+  if (cur.length) chunks.push(cur);
+  if (!chunks.length) chunks.push([]);
+  for (const chunk of chunks) {
+    const s = pptx.addSlide({ masterName: 'BRAND' });
+    s.addText(String(title), { x: 0.4, y: 0.3, w: 12.5, h: 0.6, fontSize: 22, bold: true, color: theme.colors.dk1, fontFace: theme.majorFont });
+    const rows = [headerCells(table.header, theme)];
+    for (const pr of chunk) {
+      const product = { text: pr.product, options: { bold: true, color: sm.productColor || theme.colors.dk1 } };
+      const cells = pr.milestoneCells.map((lines) => (lines.length
+        ? { text: lines.map((ln) => ({ text: ln, options: { bullet: { characters: sm.bulletChar || '•' }, breakLine: true } })) }
+        : ''));
+      rows.push([product, ...cells]);
+    }
+    s.addTable(rows, {
+      x: 0.4, y: 1.05, w: 12.5, colW: sm.colW || undefined,
+      border: { type: 'solid', pt: 0.5, color: GRID },
+      fontFace: theme.minorFont, fontSize: 11, color: theme.colors.dk1, valign: 'top',
+    });
+  }
 }
 
 function buildDeck({ summary, detailedByMilestone }, theme, outPath) {
@@ -65,7 +80,7 @@ function buildDeck({ summary, detailedByMilestone }, theme, outPath) {
   });
 
   addDivider(pptx, theme, 'Release Plan & Roadmap');
-  addSummarySlide(pptx, theme, 'Release Plan & Roadmap', summary);
+  addSummarySlides(pptx, theme, 'Release Plan & Roadmap', summary);
 
   for (const { milestone, table } of detailedByMilestone) {
     addDivider(pptx, theme, milestone);
