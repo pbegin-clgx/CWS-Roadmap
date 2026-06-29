@@ -669,7 +669,7 @@ const present = [ASSESS, AHA, PREV, REAL].every(fs.existsSync);
 test('backtest reproduces >=90% milestone agreement and 100% current-release recall',
   { skip: present ? false : 'backtest files not present' }, () => {
   const a = analyze({ aha: AHA, assess: [ASSESS], prev: PREV },
-    { currentRelease: 'v8.7 (Q3 2026)', nextRelease: 'v8.8 (Q4 2026)', futureLabel: 'Future (Q4 2026 - Q1 2027)', cut88: 72, cutFuture: 110 });
+    { currentRelease: 'v8.7 (Q3 2026)', nextRelease: 'v8.8 (Q4 2026)', futureLabel: 'Future (Q1-Q2 2027)', cut88: 72, cutFuture: 110 });
   const mine = new Map();
   for (const [ms, recs] of Object.entries(a.buckets)) for (const r of recs) mine.set(r.sym, ms);
   const norm = (m) => /8\.7/.test(m) ? '8.7' : /8\.8/.test(m) ? '8.8' : 'Future';
@@ -815,7 +815,7 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
 - Aha feature export (xlsx) in `Roadmap/`.
 - One or more Release Assessment files (xlsx) — the current release first, an optional next-release one second.
 - The previous `Product Roadmap Source` workbook (carry-forward base).
-- Release labels: current (e.g. `v8.7 (Q3 2026)`), next (e.g. `v8.8 (Q4 2026)`), future (e.g. `Future (Q4 2026 - Q1 2027)`).
+- Release labels: current (e.g. `v8.7 (Q3 2026)`), next (e.g. `v8.8 (Q4 2026)`), future (e.g. `Future (Q1-Q2 2027)`).
 
 ## Steps
 
@@ -860,7 +860,7 @@ Expected: file exists. (It appears as `/roadmap-build` in the skill list on next
 
 - [ ] **Step 3: Manual dry-run against the backtest**
 
-From `.claude/roadmap`, run `analyze` with current `v8.7 (Q3 2026)`, next `v8.8 (Q4 2026)`, future `Future (Q4 2026 - Q1 2027)`, the backtest inputs, `--out /tmp/analysis.json`. Confirm `buckets`, `newFeatures`, and `proposedCut` are populated. Then run `finalize` with `--overrides` pointing at a `{}` file into a scratch `--outdir`, and confirm the three files are produced and open.
+From `.claude/roadmap`, run `analyze` with current `v8.7 (Q3 2026)`, next `v8.8 (Q4 2026)`, future `Future (Q1-Q2 2027)`, the backtest inputs, `--out /tmp/analysis.json`. Confirm `buckets`, `newFeatures`, and `proposedCut` are populated. Then run `finalize` with `--overrides` pointing at a `{}` file into a scratch `--outdir`, and confirm the three files are produced and open.
 Expected: three files written; Source ≈ 87–106 rows; Backlog has the 11 columns; Change Report shows UP/DOWN sections.
 
 - [ ] **Step 4: Commit**

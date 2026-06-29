@@ -11,7 +11,7 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
 - Aha feature export (xlsx) in `Roadmap/`.
 - One or more Release Assessment files (xlsx) — the current release first, an optional next-release one second.
 - The previous `Product Roadmap Source` workbook (carry-forward base).
-- Release labels: current (e.g. `v8.7 (Q3 2026)`), next (e.g. `v8.8 (Q4 2026)`), future (e.g. `Future (Q4 2026 - Q1 2027)`).
+- Release labels: current (e.g. `v8.7 (Q3 2026)`), next (e.g. `v8.8 (Q4 2026)`), future (e.g. `Future (Q1-Q2 2027)`).
 
 ## Steps
 
@@ -25,7 +25,7 @@ Builds a review-ready **Product Roadmap Source** workbook, **Claims Product Back
    Read `analysis.json`.
 
 3. **Present the review queue** (do NOT write outputs yet):
-   - **Cut-line (priority-driven):** placement of everything outside the current release is driven by Product Priority, NOT Include status. Priority ≤ `cut88` (default 70) → next release; ≤ `cutFuture` (110) → Future; worse → dropped. An explicit Aha next-release tag overrides priority. `cut88` is the main knob — show the next-release/Future boundary around it and ask the user to confirm or adjust; if changed, re-run `analyze --cut88 <n>`. (Per-cycle deprioritizations, e.g. pushing assignment-workflow features to Future, are done via `milestoneOverrides`.)
+   - **Cut-line (priority-driven):** placement of everything outside the current release is driven by Product Priority, NOT Include status. Priority ≤ `cut88` (default 70) → next release; ≤ `cutFuture` (default 100, caps the roadmap at ~top 100 by priority) → Future; worse → dropped. An explicit Aha next-release tag overrides priority. `cut88` is the main knob — show the next-release/Future boundary around it and ask the user to confirm or adjust; if changed, re-run `analyze --cut88 <n>`. (Per-cycle deprioritizations, e.g. pushing assignment-workflow features to Future, are done via `milestoneOverrides`.)
    - **Judgment items:** list `analysis.judgment` with the reason; ask the user's call for each (keep / move to a named milestone / drop).
    - **New descriptions:** for each entry in `analysis.newFeatures`, draft a short Description **in the house style from `product-team-claude/CLAUDE.md`** (personas/terminology/example requirements) plus a proposed Product and Strategic Theme from the known sets. Present for approval/edit.
    - **Unassessed Aha features:** list `analysis.unassessed` — features in the Aha export but in neither the Assessment nor the previous Source (they would otherwise be missing from Source AND Backlog). For each, show its Aha priority, status, release, and initiative. Ask the user **which (if any) to add and at which milestone**. For each chosen feature, draft a Product / Strategic Theme / Description in house style.

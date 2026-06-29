@@ -11,7 +11,7 @@ const AHA = path.join(RM, 'aha_list_features_260623115843.xlsx');
 const PREV = path.join(RM, 'backtest/old_baseline/Product Roadmap Source 20260525.xlsx');
 const REAL = path.join(RM, 'Product Roadmap Source 20260623.xlsx');
 const present = [ASSESS, AHA, PREV, REAL].every(fs.existsSync);
-const OPTS = { currentRelease: 'v8.7 (Q3 2026)', nextRelease: 'v8.8 (Q4 2026)', futureLabel: 'Future (Q4 2026 - Q1 2027)', cut88: 72, cutFuture: 110 };
+const OPTS = { currentRelease: 'v8.7 (Q3 2026)', nextRelease: 'v8.8 (Q4 2026)', futureLabel: 'Future (Q1-Q2 2027)', cut88: 72, cutFuture: 100 };
 const norm = (m) => (/8\.7/.test(m) ? '8.7' : /8\.8/.test(m) ? '8.8' : 'Future');
 
 // "This release" (8.7) is driven by 1-Yes/2.1/2.2 — unchanged by the 8.8 refinement — so it should still

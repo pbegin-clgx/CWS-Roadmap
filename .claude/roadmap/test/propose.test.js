@@ -3,11 +3,11 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const { proposeCut, applyNextAssessment } = require('../lib/propose');
 
-test('proposeCut returns median priority as cut88 and 110 as cutFuture', () => {
+test('proposeCut returns median priority as cut88 and 100 as cutFuture', () => {
   const tail = [10, 20, 30, 40, 50].map((p, i) => ({ sym: `SYM-${i}`, priority: p }));
   const { cut88, cutFuture } = proposeCut(tail);
   assert.strictEqual(cut88, 30); // median
-  assert.strictEqual(cutFuture, 110);
+  assert.strictEqual(cutFuture, 100);
 });
 
 test('proposeCut ignores infinite priorities', () => {

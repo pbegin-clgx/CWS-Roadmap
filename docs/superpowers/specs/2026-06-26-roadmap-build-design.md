@@ -44,7 +44,7 @@ Building the Source workbook is the biggest time sink. A backtest of the 8.6→8
 | Previous `Product Roadmap Source *.xlsx` | Carry-forward base + priority/release baseline for change detection | Milestone, Product, Feature, Strategic Theme, Feature Code, priority, Prob, Description |
 
 ### Run parameters (prompted, with sensible defaults)
-- `currentRelease`, `nextRelease` labels (e.g. `v8.7 (Q3 2026)`, `v8.8 (Q4 2026)`, `Future (Q4 2026 - Q1 2027)`).
+- `currentRelease`, `nextRelease` labels (e.g. `v8.7 (Q3 2026)`, `v8.8 (Q4 2026)`, `Future (Q1-Q2 2027)`).
 - `cut88` / `cutFuture` priority cut-lines — **proposed by the tool**, confirmed/adjusted by Pascal.
 
 ### Outputs (written to `Roadmap/`, named `<name> <YYYYMMDD>.xlsx`)
@@ -69,10 +69,10 @@ all non-current items (2.3 / 2.4 / 3-No):
     Release in Aha = nextRelease          → nextRelease   (explicit Aha tag overrides priority)
     Release in Aha = release beyond next  → Future
     Product Priority ≤ cut88              → nextRelease    (cut88 default 70 — the main knob)
-    Product Priority ≤ cutFuture          → Future          (cutFuture default 110)
+    Product Priority ≤ cutFuture          → Future          (cutFuture default 100 — caps the roadmap at the top ~100 by priority)
     otherwise                             → dropped (not shown)
 ```
-**Model history:** early versions special-cased Include status (2.3/2.4 → next; 3-No priority-gated). Per Pascal (2026-06-29), this was reworked to be **priority-driven**: the next release holds the highest-priority work (≤ `cut88`) regardless of Maybe/No status, with an explicit Aha next-release tag as the only override. `cut88` (default 70) is the single tunable line; `cutFuture` (110) bounds Future vs dropped. (Assignment-workflow features are pushed to Future per cycle via `milestoneOverrides` — a deliberate deprioritization, not a rule.)
+**Model history:** early versions special-cased Include status (2.3/2.4 → next; 3-No priority-gated). Per Pascal (2026-06-29), this was reworked to be **priority-driven**: the next release holds the highest-priority work (≤ `cut88`) regardless of Maybe/No status, with an explicit Aha next-release tag as the only override. `cut88` (default 70) is the single tunable line; `cutFuture` (default 100) caps the roadmap (Future holds priorities between `cut88` and `cutFuture`; worse than `cutFuture` is dropped). (Assignment-workflow features are pushed to Future per cycle via `milestoneOverrides` — a deliberate deprioritization, not a rule.)
 
 **Always applied:**
 ```
@@ -83,7 +83,7 @@ features in previous Source but absent from any Assessment → "Delivered" (list
 ```
 A negative Product Priority in the Assessment marks a feature that has already shipped: it is excluded from all release buckets and added to the Delivered list (so it appears in the Change Report and as a `Delivered` row in the Backlog, never on the active roadmap).
 
-The `cut88` line is **tunable per cycle** (`--cut88`), not hard-coded; Pascal adjusts it and the tool re-runs. Defaults: `cut88=70`, `cutFuture=110`.
+The cut-lines are **tunable per cycle** (`--cut88`, `--cutFuture`), not hard-coded; Pascal adjusts them and the tool re-runs. Defaults: `cut88=70`, `cutFuture=100`.
 
 ## 5. Carry-forward & descriptions
 
