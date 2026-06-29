@@ -11,17 +11,19 @@ test('1-Yes / 2.1 / 2.2 go to current release', () => {
   assert.strictEqual(c({ include: '2.2-Maybe', releaseInAha: 'Design Backlog', priority: 44 }), '8.7');
 });
 
-test('2.3 / 2.4 go to next release at any priority', () => {
-  assert.strictEqual(c({ include: '2.3-Maybe', releaseInAha: 'Product Backlog', priority: 150 }), '8.8');
-  assert.strictEqual(c({ include: '2.4-Maybe', releaseInAha: 'Design Backlog', priority: 123 }), '8.8');
+test('2.3 / 2.4 go to next release only within the roadmap window (<= cutFuture)', () => {
+  assert.strictEqual(c({ include: '2.3-Maybe', releaseInAha: 'Product Backlog', priority: 50 }), '8.8');
+  assert.strictEqual(c({ include: '2.4-Maybe', releaseInAha: 'Design Backlog', priority: 110 }), '8.8'); // at the line
+  assert.strictEqual(c({ include: '2.4-Maybe', releaseInAha: 'Design Backlog', priority: 123 }), 'Future'); // worse than line
+  assert.strictEqual(c({ include: '2.3-Maybe', releaseInAha: 'Product Backlog', priority: 150 }), 'Future');
 });
 
-test('3-No uses Aha release overrides then priority cut-lines', () => {
-  assert.strictEqual(c({ include: '3-No', releaseInAha: 'Release 8.8', priority: 999 }), '8.8'); // explicit next
+test('3-No reaches the next release ONLY via an explicit Aha next-release tag (no priority promotion)', () => {
+  assert.strictEqual(c({ include: '3-No', releaseInAha: 'Release 8.8', priority: 999 }), '8.8'); // explicit next tag wins
   assert.strictEqual(c({ include: '3-No', releaseInAha: 'Release 8.9', priority: 5 }), 'Future'); // beyond next
-  assert.strictEqual(c({ include: '3-No', releaseInAha: 'Product Backlog', priority: 40 }), '8.8'); // <= cut88
+  assert.strictEqual(c({ include: '3-No', releaseInAha: 'Product Backlog', priority: 40 }), 'Future'); // high priority but no tag -> Future (was 8.8 under old cut88)
   assert.strictEqual(c({ include: '3-No', releaseInAha: 'Product Backlog', priority: 90 }), 'Future'); // <= cutFuture
-  assert.strictEqual(c({ include: '3-No', releaseInAha: 'Product Backlog', priority: 130 }), 'DROP'); // beyond
+  assert.strictEqual(c({ include: '3-No', releaseInAha: 'Product Backlog', priority: 130 }), 'DROP'); // beyond window
 });
 
 test('nextRelease works as full quarter label', () => {
