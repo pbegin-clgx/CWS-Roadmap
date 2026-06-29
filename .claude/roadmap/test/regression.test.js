@@ -11,7 +11,7 @@ const AHA = path.join(RM, 'aha_list_features_260623115843.xlsx');
 const PREV = path.join(RM, 'backtest/old_baseline/Product Roadmap Source 20260525.xlsx');
 const REAL = path.join(RM, 'Product Roadmap Source 20260623.xlsx');
 const present = [ASSESS, AHA, PREV, REAL].every(fs.existsSync);
-const OPTS = { currentRelease: 'v8.7 (Q3 2026)', nextRelease: 'v8.8 (Q4 2026)', futureLabel: 'Future (Q4 2026 - Q1 2027)', cutFuture: 110 };
+const OPTS = { currentRelease: 'v8.7 (Q3 2026)', nextRelease: 'v8.8 (Q4 2026)', futureLabel: 'Future (Q4 2026 - Q1 2027)', cut88: 72, cutFuture: 110 };
 const norm = (m) => (/8\.7/.test(m) ? '8.7' : /8\.8/.test(m) ? '8.8' : 'Future');
 
 // "This release" (8.7) is driven by 1-Yes/2.1/2.2 — unchanged by the 8.8 refinement — so it should still
@@ -32,20 +32,20 @@ test('backtest still reproduces 100% of the current-release (8.7) features',
   assert.strictEqual(got87, real87, `current-release recall ${got87}/${real87} != 100%`);
 });
 
-// Invariants of the refined 8.8 rule, checked against the real assessment data.
-test('refined rule: every 8.8 feature is a Maybe within window OR an Aha-tagged-8.8 item',
+// Invariant of the priority-driven rule: every assessed 8.8 feature is either within the
+// priority window (<= cut88) or explicitly Aha-tagged to the next release.
+test('priority-driven rule: every assessed 8.8 feature has priority <= cut88 OR an Aha next-release tag',
   { skip: present ? false : 'backtest files not present' }, () => {
   const a = analyze({ aha: AHA, assess: [ASSESS], prev: PREV }, OPTS);
   const assess = parseAssessment(ASSESS);
   const in88 = (a.buckets[OPTS.nextRelease] || []).map((r) => r.sym);
-  let no3WithoutTag = 0, maybeOverLine = 0;
+  let belowLineNoTag = 0;
   for (const sym of in88) {
     const e = assess.get(sym);
     if (!e) continue; // additions / non-assessment rows are allowed in 8.8 by user choice
     const tagged88 = /Release\s+8\.8/.test(String(e.releaseInAha));
-    if (/^3-No/.test(e.include) && !tagged88) no3WithoutTag++;
-    if (/^2\.[34]/.test(e.include) && Number.isFinite(e.priority) && e.priority > OPTS.cutFuture) maybeOverLine++;
+    const within = Number.isFinite(e.priority) && e.priority <= OPTS.cut88;
+    if (!within && !tagged88) belowLineNoTag++;
   }
-  assert.strictEqual(no3WithoutTag, 0, `${no3WithoutTag} untagged 3-No items leaked into 8.8`);
-  assert.strictEqual(maybeOverLine, 0, `${maybeOverLine} below-the-line Maybes leaked into 8.8`);
+  assert.strictEqual(belowLineNoTag, 0, `${belowLineNoTag} features below the priority line (and untagged) leaked into 8.8`);
 });
