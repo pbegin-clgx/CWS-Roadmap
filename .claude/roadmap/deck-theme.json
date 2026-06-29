@@ -5,5 +5,10 @@
     "accent4": "DD37D2", "accent5": "148DEF", "accent6": "339B62"
   },
   "majorFont": "TWK Everett",
-  "minorFont": "TWK Everett"
+  "minorFont": "TWK Everett",
+  "summary": {
+    "colW": [1.75, 3.53, 3.48, 3.74],
+    "productColor": "FF8E65",
+    "bulletChar": "•"
+  }
 }

@@ -12,7 +12,17 @@ function loadTheme(themePath) {
   }
   const colors = t.colors || {};
   for (const k of REQUIRED) if (!colors[k]) throw new Error(`Theme is missing required color "${k}" in ${themePath}`);
-  return { colors, majorFont: t.majorFont || 'Arial', minorFont: t.minorFont || 'Arial' };
+  const summary = t.summary || {};
+  return {
+    colors,
+    majorFont: t.majorFont || 'Arial',
+    minorFont: t.minorFont || 'Arial',
+    summary: {
+      colW: summary.colW || null,                 // null -> deck.js even-split default
+      productColor: summary.productColor || colors.dk1,
+      bulletChar: summary.bulletChar || '•',
+    },
+  };
 }
 
 module.exports = { loadTheme };

@@ -114,12 +114,14 @@ function main() {
     const aha = parseAha(a.aha); const prev = parsePrevSource(a.prev);
     // Legacy product-name renames (e.g. "Estimate Mobile" -> "Estimate for iOS"); configurable via --renames or default renames.json
     const renamer = makeRenamer(loadRenameMap(a.renames || path.join(__dirname, 'renames.json')));
+    const exclude = new Set(ov.excludeFeatures || []); // drop these features (by post-rename feature name) from the roadmap entirely
     const records = [];
     for (const recs of Object.values(analysis.buckets)) for (const r of recs) {
       const d = (ov.descriptions || {})[r.sym];
       if (d) { r.product = d.product ?? r.product; r.theme = d.theme ?? r.theme; r.description = d.description ?? r.description; }
       if ((ov.milestoneOverrides || {})[r.sym]) r.milestone = ov.milestoneOverrides[r.sym];
       r.product = renamer(r.product); r.feature = renamer(r.feature); r.description = renamer(r.description);
+      if (exclude.has(r.feature)) continue; // excluded by user (e.g. delivered/retired bundle rows)
       records.push(r);
     }
     // User-approved additions from the unassessed-Aha list: inject as records and mark them New.
