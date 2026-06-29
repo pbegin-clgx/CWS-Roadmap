@@ -104,7 +104,7 @@ function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   const a = parseArgs(rest);
   if (cmd === 'analyze') {
-    const opts = { currentRelease: a.current, nextRelease: a.next, futureLabel: a.future, cut88: parseFloat(a.cut88 || '72'), cutFuture: parseFloat(a.cutFuture || '110') };
+    const opts = { currentRelease: a.current, nextRelease: a.next, futureLabel: a.future, cut88: parseFloat(a.cut88 || '70'), cutFuture: parseFloat(a.cutFuture || '110') };
     const res = analyze({ aha: a.aha, assess: String(a.assess).split(','), prev: a.prev }, opts);
     fs.writeFileSync(a.out || 'analysis.json', JSON.stringify(res, null, 2));
     console.log(`analyze: wrote ${a.out || 'analysis.json'} (proposedCut ${JSON.stringify(res.proposedCut)})`);
