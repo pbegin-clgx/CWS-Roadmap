@@ -30,6 +30,18 @@ test('detailedRows filters to one milestone and appends the SYM code (incl. mult
   assert.strictEqual(fut[1][1], 'Contents reporting (SYM-2296, SYM-2297, SYM-2298)'); // multi-code appended
 });
 
+test('summaryRows strips the redundant "Estimate for iOS:" prefix; detailedRows keeps the full name', () => {
+  const recs = [
+    { sym: 'SYM-1', milestone: 'v8.7 (Q3 2026)', product: 'Estimate for iOS', feature: 'Estimate for iOS: Autosave Photos', description: 'd' },
+    { sym: 'SYM-2', milestone: 'v8.7 (Q3 2026)', product: 'Estimate for iOS', feature: 'Estimate for iOS - Manual Calibration', description: 'd' },
+  ];
+  const sum = summaryRows(recs, MS);
+  const iosRow = sum.find((r) => r[0] === 'Estimate for iOS');
+  assert.strictEqual(iosRow[1], '• Autosave Photos\n• Manual Calibration'); // prefix (both : and -) stripped on Summary
+  const det = detailedRows(recs, 'v8.7 (Q3 2026)');
+  assert.strictEqual(det[1][1], 'Estimate for iOS: Autosave Photos (SYM-1)'); // Detailed keeps the full name
+});
+
 test('detailedSheetName derives a safe, short tab name', () => {
   assert.strictEqual(detailedSheetName('v8.7 (Q3 2026)'), 'Detailed 8.7');
   assert.strictEqual(detailedSheetName('v8.8 (Q4 2026)'), 'Detailed 8.8');

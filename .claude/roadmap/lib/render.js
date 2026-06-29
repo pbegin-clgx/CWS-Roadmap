@@ -55,13 +55,17 @@ function detailedSheetName(label) {
   return ('Detailed ' + String(label).replace(/[:\\/?*[\]]/g, '')).slice(0, 31);
 }
 
+// On the Summary (which is grouped by Product), the "Estimate for iOS:" / "Estimate for iOS -"
+// prefix is redundant, so strip it from the feature names there (Detailed keeps the full name).
+const summaryFeature = (f) => String(f).replace(/^Estimate for iOS\s*[:\-]\s*/, '');
+
 // Product × milestone matrix; each cell is a newline-separated bulleted list of feature names (priority order).
 function summaryRows(records, milestones) {
   const grid = {};
   for (const r of records) {
     if (!r.product) continue;
     (grid[r.product] = grid[r.product] || {});
-    (grid[r.product][r.milestone] = grid[r.product][r.milestone] || []).push(r.feature);
+    (grid[r.product][r.milestone] = grid[r.product][r.milestone] || []).push(summaryFeature(r.feature));
   }
   const rows = [['Product', ...milestones]];
   for (const p of orderedProducts(records)) {

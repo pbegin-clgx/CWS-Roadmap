@@ -30,6 +30,30 @@ function addTableSlide(pptx, theme, title, table, colW) {
   });
 }
 
+// The Summary slide is styled per the corporate edits: product names in the accent color, real
+// bulleted feature lists, and the configured column widths (theme.summary).
+function addSummarySlide(pptx, theme, title, table) {
+  const sm = theme.summary || {};
+  const s = pptx.addSlide({ masterName: 'BRAND' });
+  s.addText(String(title), { x: 0.4, y: 0.3, w: 12.5, h: 0.6, fontSize: 22, bold: true, color: theme.colors.dk1, fontFace: theme.majorFont });
+  const rows = [headerCells(table.header, theme)];
+  for (const r of table.body) {
+    const product = { text: String(r[0]), options: { bold: true, color: sm.productColor || theme.colors.dk1 } };
+    const cells = r.slice(1).map((cellText) => {
+      const lines = String(cellText).split('\n').map((ln) => ln.replace(/^•\s*/, '').trim()).filter(Boolean);
+      if (!lines.length) return '';
+      return { text: lines.map((ln) => ({ text: ln, options: { bullet: { characters: sm.bulletChar || '•' }, breakLine: true } })) };
+    });
+    rows.push([product, ...cells]);
+  }
+  s.addTable(rows, {
+    x: 0.4, y: 1.05, w: 12.5, colW: sm.colW || undefined,
+    autoPage: true, autoPageRepeatHeader: true, newSlideStartY: 0.6,
+    border: { type: 'solid', pt: 0.5, color: GRID },
+    fontFace: theme.minorFont, fontSize: 11, color: theme.colors.dk1, valign: 'top',
+  });
+}
+
 function buildDeck({ summary, detailedByMilestone }, theme, outPath) {
   const pptx = new PptxGenJS();
   pptx.layout = 'LAYOUT_WIDE';
@@ -41,7 +65,7 @@ function buildDeck({ summary, detailedByMilestone }, theme, outPath) {
   });
 
   addDivider(pptx, theme, 'Release Plan & Roadmap');
-  addTableSlide(pptx, theme, 'Release Plan & Roadmap', summary, [2.4, 3.37, 3.37, 3.36]);
+  addSummarySlide(pptx, theme, 'Release Plan & Roadmap', summary);
 
   for (const { milestone, table } of detailedByMilestone) {
     addDivider(pptx, theme, milestone);

@@ -10,6 +10,10 @@ test('loadTheme reads the committed corporate palette and fonts', () => {
   assert.strictEqual(t.colors.lt1, 'F7EFE2');
   assert.strictEqual(t.colors.accent1, 'FFCD2E');
   assert.strictEqual(t.majorFont, 'TWK Everett');
+  // summary styling captured from the corporate-edited deck
+  assert.deepStrictEqual(t.summary.colW, [1.75, 3.53, 3.48, 3.74]);
+  assert.strictEqual(t.summary.productColor, 'FF8E65');
+  assert.strictEqual(t.summary.bulletChar, '•');
 });
 
 test('loadTheme throws a clear error when a required color is missing', () => {
