@@ -39,6 +39,12 @@ function backlogRows(records, aha, prev, changes, renamer = (s) => s, assessMeta
     const m = meta(d.sym);
     rows.push([d.sym, '', '', renamer(a.name || d.feature), renamer(a.initiative || ''), a.release || '', a.status || '', m.effort ?? '', m.devComplete ?? '', a.prioritization || '', '', 'Delivered']);
   }
+  // Append removed features (on the previous roadmap but dropped from the Assessment) so they aren't silently lost.
+  for (const d of (changes && changes.removed) || []) {
+    const a = aha.get(d.sym) || {};
+    const m = meta(d.sym);
+    rows.push([d.sym, '', '', renamer(a.name || d.feature), renamer(a.initiative || ''), a.release || '', a.status || '', m.effort ?? '', m.devComplete ?? '', a.prioritization || '', '', 'Removed']);
+  }
   return rows;
 }
 
@@ -89,6 +95,7 @@ function section(title, lines) { return lines.length ? `## ${title}\n${lines.joi
 function renderChangeReport(ch) {
   let md = '# Roadmap Change Report\n\n';
   md += section('Delivered', (ch.delivered || []).map((d) => `- ${d.sym} — ${d.feature}`));
+  md += section('Removed', (ch.removed || []).map((d) => `- ${d.sym} — ${d.feature}`));
   md += section('New', (ch.added || []).map((d) => `- ${d.sym} (${d.milestone}) — ${d.feature}`));
   md += section('Priority Changed UP', (ch.priorityUp || []).map((d) => `- ${d.sym} — ${d.feature}: ${d.from} → ${d.to}`));
   md += section('Priority Changed DOWN', (ch.priorityDown || []).map((d) => `- ${d.sym} — ${d.feature}: ${d.from} → ${d.to}`));

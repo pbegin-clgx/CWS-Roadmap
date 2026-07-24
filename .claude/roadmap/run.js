@@ -73,10 +73,15 @@ function analyze(paths, opts) {
 
   const proposedCut = proposeCut(tail);
   const changes = detectChanges(prev, current, assessmentSyms);
-  changes.delivered = changes.delivered.filter((d) => /^SYM-\d+$/.test(String(d.sym).trim()));
-  // Merge negative-priority (shipped) features into the delivered list, de-duplicated.
-  const deliveredSeen = new Set(changes.delivered.map((d) => d.sym));
+  // Removed = on the previous roadmap but no longer in the Assessment (single-SYM rows only).
+  changes.removed = changes.removed.filter((d) => /^SYM-\d+$/.test(String(d.sym).trim()));
+  // Delivered = features the current Assessment explicitly marks shipped via a negative Product Priority.
+  changes.delivered = [];
+  const deliveredSeen = new Set();
   for (const d of deliveredByPriority) if (!deliveredSeen.has(d.sym)) { changes.delivered.push(d); deliveredSeen.add(d.sym); }
+  // A feature explicitly marked Delivered must never also appear under Removed.
+  const deliveredSet = new Set(changes.delivered.map((d) => d.sym));
+  changes.removed = changes.removed.filter((d) => !deliveredSet.has(d.sym));
   return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta, unassessed };
 }
 

@@ -24,13 +24,36 @@ function parseAssessment(path, sheetName = 'Release Assessment') {
   return m;
 }
 
+// Build a case-insensitive header-name -> column-index map from the header row.
+function headerIndex(headerRow) {
+  const idx = {};
+  (headerRow || []).forEach((h, i) => {
+    const key = clean1(h).toLowerCase();
+    if (key && !(key in idx)) idx[key] = i;
+  });
+  return idx;
+}
+
 function parseAha(path, sheetName = 'Report') {
   const rows = readSheet(path, sheetName);
   const m = new Map();
+  if (!rows.length) return m;
+  // Resolve columns by header name so the parser survives Aha column changes
+  // (older exports carried an extra unlabeled column that shifted every field right by one).
+  // Fall back to the legacy fixed indices when a header is missing.
+  const H = headerIndex(rows[0]);
+  const col = (name, fallback) => (name in H ? H[name] : fallback);
+  const cSym = col('feature reference #', 0);
+  const cName = col('feature name', 2);
+  const cPriority = col('product priority', 3);
+  const cStatus = col('feature status', 4);
+  const cRelease = col('release name', 5);
+  const cPrior = col('prioritization', 8);
+  const cInit = col('initiative name', 11);
   for (let i = 1; i < rows.length; i++) {
-    const r = rows[i]; const sym = String(r[0]).trim();
+    const r = rows[i]; const sym = String(r[cSym]).trim();
     if (!isSym(sym)) continue;
-    m.set(sym, { name: clean1(r[2]), priority: r[3], status: r[4], release: clean1(r[5]), prioritization: r[8], initiative: clean1(r[11]) });
+    m.set(sym, { name: clean1(r[cName]), priority: r[cPriority], status: r[cStatus], release: clean1(r[cRelease]), prioritization: r[cPrior], initiative: clean1(r[cInit]) });
   }
   return m;
 }

@@ -15,11 +15,11 @@ const current = [
   { sym: 'SYM-4', milestone: '8.8', feature: 'Re-bucketed', priority: 9 },
   { sym: 'SYM-5', milestone: '8.8', feature: 'Brand new', priority: 60 },
 ];
-const assessmentSyms = new Set(['SYM-2', 'SYM-3', 'SYM-4', 'SYM-5']); // SYM-1 absent => delivered
+const assessmentSyms = new Set(['SYM-2', 'SYM-3', 'SYM-4', 'SYM-5']); // SYM-1 absent => removed
 
-test('detectChanges classifies delivered/added/up/down/rebucketed', () => {
+test('detectChanges classifies removed/added/up/down/rebucketed', () => {
   const ch = detectChanges(prev, current, assessmentSyms);
-  assert.deepStrictEqual(ch.delivered, [{ sym: 'SYM-1', feature: 'Shipped thing' }]);
+  assert.deepStrictEqual(ch.removed, [{ sym: 'SYM-1', feature: 'Shipped thing' }]);
   assert.deepStrictEqual(ch.added, [{ sym: 'SYM-5', milestone: '8.8', feature: 'Brand new' }]);
   assert.deepStrictEqual(ch.priorityUp, [{ sym: 'SYM-2', feature: 'Moved up', from: 17, to: 2 }]);
   assert.deepStrictEqual(ch.priorityDown, [{ sym: 'SYM-3', feature: 'Slid down', from: 30, to: 45 }]);
