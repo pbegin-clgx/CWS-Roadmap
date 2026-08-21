@@ -45,6 +45,14 @@ function backlogRows(records, aha, prev, changes, renamer = (s) => s, assessMeta
     const m = meta(d.sym);
     rows.push([d.sym, '', '', renamer(a.name || d.feature), renamer(a.initiative || ''), a.release || '', a.status || '', m.effort ?? '', m.devComplete ?? '', a.prioritization || '', '', 'Removed']);
   }
+  // Append below-cut-line features (assessed, but worse than the Future cut-line) — not on the
+  // Source/deck roadmap, but still listed in the Backlog so they aren't invisible everywhere.
+  for (const d of (changes && changes.belowCutLine) || []) {
+    const a = aha.get(d.sym) || {};
+    const p = prev.get(d.sym) || {};
+    const m = meta(d.sym);
+    rows.push([d.sym, (p.priority ?? ''), d.priority, renamer(a.name || d.feature), renamer(a.initiative || ''), a.release || '', a.status || '', m.effort ?? '', m.devComplete ?? '', a.prioritization || '', '', 'Below Cut-Line']);
+  }
   return rows;
 }
 
@@ -100,6 +108,7 @@ function renderChangeReport(ch) {
   md += section('Priority Changed UP', (ch.priorityUp || []).map((d) => `- ${d.sym} — ${d.feature}: ${d.from} → ${d.to}`));
   md += section('Priority Changed DOWN', (ch.priorityDown || []).map((d) => `- ${d.sym} — ${d.feature}: ${d.from} → ${d.to}`));
   md += section('Re-bucketed', (ch.reBucketed || []).map((d) => `- ${d.sym} — ${d.feature}: ${d.from} → ${d.to}`));
+  md += section('Below Cut-Line (Backlog only, not on roadmap)', (ch.belowCutLine || []).map((d) => `- ${d.sym} — ${d.feature} (priority ${d.priority})`));
   return md;
 }
 

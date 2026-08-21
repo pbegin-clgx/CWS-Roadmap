@@ -17,7 +17,7 @@ function analyze(paths, opts) {
   const ahaAll = paths.aha ? parseAha(paths.aha) : new Map();
 
   const buckets = {}; const newFeatures = []; const judgment = []; const current = [];
-  const assessMeta = {}; const deliveredByPriority = [];
+  const assessMeta = {}; const deliveredByPriority = []; const belowCutLine = [];
   const assessmentSyms = new Set([...primary.keys(), ...(nextAssess ? nextAssess.keys() : [])]);
   const nextNum = (String(opts.nextRelease).match(/8\.\d+/) || [])[0];
 
@@ -31,10 +31,16 @@ function analyze(paths, opts) {
       continue;
     }
     let ms = classify(a, opts);
-    if (ms === 'DROP') continue;
-    ms = applyNextAssessment(ms, sym, nextAssess, opts);
     const c = prev.get(sym);
     const prio = a.priority === Infinity ? '' : a.priority;
+    if (ms === 'DROP') {
+      // Below the Future cut-line — never shown on the Source/deck roadmap, but still worth
+      // surfacing in the Backlog/Change Report so it isn't silently invisible everywhere.
+      belowCutLine.push({ sym, product: c ? c.product : '', feature: c ? c.feature : cleanName(a.summary),
+        theme: c ? c.theme : '', priority: prio, prob: a.include, description: c ? c.description : '' });
+      continue;
+    }
+    ms = applyNextAssessment(ms, sym, nextAssess, opts);
     const rec = { sym, milestone: ms, product: c ? c.product : '', feature: c ? c.feature : cleanName(a.summary),
       theme: c ? c.theme : '', priority: prio, prob: a.include, description: c ? c.description : '' };
     (buckets[ms] = buckets[ms] || []).push(rec);
@@ -82,7 +88,7 @@ function analyze(paths, opts) {
   // A feature explicitly marked Delivered must never also appear under Removed.
   const deliveredSet = new Set(changes.delivered.map((d) => d.sym));
   changes.removed = changes.removed.filter((d) => !deliveredSet.has(d.sym));
-  return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta, unassessed };
+  return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta, unassessed, belowCutLine };
 }
 
 // Build records for user-approved additions (features chosen from the unassessed Aha list).
@@ -136,6 +142,11 @@ function main() {
       records.push(rec);
       analysis.changes.added.push({ sym: rec.sym, milestone: rec.milestone, feature: rec.feature });
     }
+    // Below-cut-line features never appear in Source/deck, but are surfaced in the Backlog/Change
+    // Report so a feature isn't silently invisible everywhere just because it missed the roadmap.
+    analysis.changes.belowCutLine = (analysis.belowCutLine || [])
+      .map((r) => ({ ...r, product: renamer(r.product), feature: renamer(r.feature), description: renamer(r.description) }))
+      .filter((r) => !exclude.has(r.feature));
     const order = { [analysis.opts.currentRelease]: 0, [analysis.opts.nextRelease]: 1, [analysis.opts.futureLabel]: 2 };
     records.sort((x, y) => (order[x.milestone] - order[y.milestone]) || ((parseFloat(x.priority) || 9999) - (parseFloat(y.priority) || 9999)));
     const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {}, opts: analysis.opts });
