@@ -1,4 +1,6 @@
-const INTERNAL = /translation|Apply API changes\/fixes|Migrate UX|Angular Update|ClaimWrapper|Intune|MixPanel|Mixpanel/i;
+// Angular version-upgrade summaries appear in either word order ("Angular Update", "Update to
+// Angular NN") — match both (2026-08-24: "Update to Angular 22" slipped through as customer-facing).
+const INTERNAL = /translation|Apply API changes\/fixes|Migrate UX|Angular\s+Update|Update\s+to\s+Angular|ClaimWrapper|Intune|MixPanel|Mixpanel/i;
 const isInternal = (summary) => INTERNAL.test(String(summary));
 
 // Roadmap bucketing — PRIORITY-DRIVEN. The current release (8.7) is set by dev confidence

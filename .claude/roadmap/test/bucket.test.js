@@ -39,3 +39,8 @@ test('isInternal flags tech-debt/internal summaries', () => {
   assert.ok(isInternal('Migrate UX to use Symbility-net-lib library - Implement'));
   assert.ok(!isInternal('Autosave Payment Progress - Implement'));
 });
+
+test('isInternal catches Angular version-upgrade summaries in either word order', () => {
+  assert.ok(isInternal('86353 - Angular Update to v18 - Implement'));
+  assert.ok(isInternal('94123 - Update to Angular 22 - Implement')); // reversed order slipped through before (2026-08-24)
+});
