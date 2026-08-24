@@ -57,6 +57,32 @@ function analyze(paths, opts) {
     const nearCut = !c && Number.isFinite(a.priority) && Math.abs(a.priority - opts.cut88) <= 5;
     if (relConflict || nearCut) judgment.push({ sym, feature: rec.feature, reason: relConflict ? `Aha says ${rel} but rule placed ${ms}` : 'new feature near cut-line' });
   }
+  // Features that exist ONLY in the next-release assessment — never assessed for the current
+  // release at all — previously vanished entirely: the main loop above only walks `primary`, and
+  // the "unassessed" surfacing below explicitly skips anything in `assessmentSyms` (which includes
+  // nextAssess's keys too), so they looked "already handled" when nothing had actually placed them
+  // anywhere. Give them the same next-assessment-driven classification as a feature that missed the
+  // current-release cut (2026-08-24 incident: SYM-2600/2601/2587 were completely invisible).
+  if (nextAssess) {
+    for (const [sym, n] of nextAssess) {
+      if (primary.has(sym) || isInternal(n.summary)) continue;
+      assessMeta[sym] = { effort: n.effort, devComplete: n.devComplete };
+      const c = prev.get(sym);
+      const prio = n.priority === Infinity ? '' : n.priority;
+      const ms = applyNextAssessment(opts.futureLabel, sym, nextAssess, opts);
+      if (ms === 'DROP') {
+        belowCutLine.push({ sym, product: c ? c.product : '', feature: c ? c.feature : cleanName(n.summary),
+          theme: c ? c.theme : '', priority: prio, prob: n.include, description: c ? c.description : '' });
+        continue;
+      }
+      const rec = { sym, milestone: ms, product: c ? c.product : '', feature: c ? c.feature : cleanName(n.summary),
+        theme: c ? c.theme : '', priority: prio, probs: probsFor(sym), description: c ? c.description : '' };
+      (buckets[ms] = buckets[ms] || []).push(rec);
+      current.push({ sym, milestone: ms, feature: rec.feature, priority: prio });
+      if (!c) newFeatures.push({ sym, feature: rec.feature, milestone: ms });
+      judgment.push({ sym, feature: rec.feature, reason: `only assessed in the next-release (${opts.nextRelease}) assessment, not in the current-release one at all — confirm placement` });
+    }
+  }
   // Carry forward manually-curated prev-Source rows that can never appear in an Assessment
   // (blank, '-', or multi-code Feature Code) so they are not silently dropped (spec §5/§10).
   const isSingleSym = (code) => /^SYM-\d+$/.test(String(code).trim());
