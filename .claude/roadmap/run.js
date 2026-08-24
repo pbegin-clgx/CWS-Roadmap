@@ -24,15 +24,18 @@ function analyze(paths, opts) {
   for (const [sym, a] of primary) {
     assessMeta[sym] = { effort: a.effort, devComplete: a.devComplete };
     if (isInternal(a.summary)) continue;
-    // A negative Product Priority marks a feature that has already shipped — treat as Delivered, off the active roadmap.
-    if (Number.isFinite(a.priority) && a.priority < 0) {
-      const c0 = prev.get(sym);
-      deliveredByPriority.push({ sym, feature: c0 ? c0.feature : cleanName(a.summary) });
-      continue;
-    }
     let ms = classify(a, opts);
     const c = prev.get(sym);
     const prio = a.priority === Infinity ? '' : a.priority;
+    // A negative Product Priority sometimes marks a feature carried over from an already-shipped
+    // release — but an explicit current-release commitment (Include 1-Yes/2.1/2.2) always wins:
+    // this Assessment also uses negative numbers as an "absolute top priority" ranking tier for
+    // locked-in current-release work that has NOT shipped yet (confirmed against Pascal's own
+    // release-scope count, 2026-08-24 — see roadmap-build-workflow memory).
+    if (ms !== opts.currentRelease && Number.isFinite(a.priority) && a.priority < 0) {
+      deliveredByPriority.push({ sym, feature: c ? c.feature : cleanName(a.summary) });
+      continue;
+    }
     if (ms === 'DROP') {
       // Below the Future cut-line — never shown on the Source/deck roadmap, but still worth
       // surfacing in the Backlog/Change Report so it isn't silently invisible everywhere.
