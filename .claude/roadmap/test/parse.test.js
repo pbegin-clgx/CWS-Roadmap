@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const os = require('os'); const path = require('path'); const fs = require('fs');
 const { writeSheets } = require('../lib/xlsx-io');
-const { parseAssessment, parseAha, parsePrevSource, cleanName } = require('../lib/parse');
+const { parseAssessment, parseAha, parsePrevSource, parsePrevSourceRows, cleanName } = require('../lib/parse');
 
 function tmp(name) { return path.join(os.tmpdir(), `${name}-${process.pid}.xlsx`); }
 
@@ -65,5 +65,23 @@ test('parsePrevSource keys by Feature Code with carry-forward fields', () => {
   assert.strictEqual(m.get('SYM-2561').product, 'Workspace');
   assert.strictEqual(m.get('SYM-2561').priority, 17);
   assert.strictEqual(m.get('SYM-2561').description, 'Autosaves work.');
+  fs.unlinkSync(f);
+});
+
+test('parsePrevSource/parsePrevSourceRows resolve columns by header name, so a Source workbook with 2 Prob columns (from a multi-assessment cycle) still parses Description correctly', () => {
+  const f = tmp('prev-multiprob');
+  writeSheets(f, { 'Source': [
+    ['Milestone','Product','Feature','Strategic Theme','Feature Code','priority','Prob 8.7','Prob 8.8','Description'],
+    ['v8.7 (Q3 2026)','Workspace','Autosave Payment Progress','UX','SYM-2561',17,'1-Yes','3-No','Autosaves work.'],
+  ]});
+  const m = parsePrevSource(f);
+  assert.strictEqual(m.get('SYM-2561').product, 'Workspace');
+  assert.strictEqual(m.get('SYM-2561').priority, 17);
+  assert.strictEqual(m.get('SYM-2561').description, 'Autosaves work.'); // not shifted/garbled by the extra Prob column
+  assert.strictEqual(m.get('SYM-2561').prob, '1-Yes'); // first Prob-like column, for the legacy single-value carry-forward path
+
+  const rows = parsePrevSourceRows(f);
+  assert.strictEqual(rows[0].code, 'SYM-2561');
+  assert.strictEqual(rows[0].description, 'Autosaves work.');
   fs.unlinkSync(f);
 });

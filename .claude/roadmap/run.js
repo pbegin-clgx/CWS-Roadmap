@@ -20,6 +20,16 @@ function analyze(paths, opts) {
   const assessMeta = {}; const belowCutLine = [];
   const assessmentSyms = new Set([...primary.keys(), ...(nextAssess ? nextAssess.keys() : [])]);
   const nextNum = (String(opts.nextRelease).match(/8\.\d+/) || [])[0];
+  // One "Prob" column per assessment file this cycle, labeled with the release's short version
+  // number (e.g. "8.7", "8.8") — each looked up independently in its own file, regardless of which
+  // milestone the feature is actually bucketed into. Falls back to the full label if it has no
+  // "X.Y" version number to extract.
+  const shortLabel = (s) => (String(s).match(/(\d+\.\d+)/) || [s])[0];
+  const assessEntries = [{ label: shortLabel(opts.currentRelease), map: primary }];
+  if (nextAssess) assessEntries.push({ label: shortLabel(opts.nextRelease), map: nextAssess });
+  const assessLabels = assessEntries.map((e) => e.label);
+  const probsFor = (sym) => assessEntries.map(({ map }) => (map.get(sym) || {}).include || '');
+  const blankProbs = () => assessEntries.map(() => '');
 
   for (const [sym, a] of primary) {
     assessMeta[sym] = { effort: a.effort, devComplete: a.devComplete };
@@ -36,7 +46,7 @@ function analyze(paths, opts) {
     }
     ms = applyNextAssessment(ms, sym, nextAssess, opts);
     const rec = { sym, milestone: ms, product: c ? c.product : '', feature: c ? c.feature : cleanName(a.summary),
-      theme: c ? c.theme : '', priority: prio, prob: a.include, description: c ? c.description : '' };
+      theme: c ? c.theme : '', priority: prio, probs: probsFor(sym), description: c ? c.description : '' };
     (buckets[ms] = buckets[ms] || []).push(rec);
     current.push({ sym, milestone: ms, feature: rec.feature, priority: prio });
     if (!c) newFeatures.push({ sym, feature: rec.feature, milestone: ms });
@@ -53,7 +63,7 @@ function analyze(paths, opts) {
     if (isSingleSym(row.code) || !row.feature) continue;
     const ms = opts.futureLabel;
     const rec = { sym: row.code || '(no code)', milestone: ms, product: row.product, feature: row.feature,
-      theme: row.theme, priority: row.priority === '' ? '' : row.priority, prob: row.prob, description: row.description };
+      theme: row.theme, priority: row.priority === '' ? '' : row.priority, probs: blankProbs(), description: row.description };
     (buckets[ms] = buckets[ms] || []).push(rec);
     current.push({ sym: rec.sym, milestone: ms, feature: rec.feature, priority: rec.priority });
     judgment.push({ sym: rec.sym, feature: rec.feature, reason: `manually-curated row (no Assessment, prev milestone "${row.milestone}") carried into ${ms} — confirm placement/inclusion` });
@@ -81,14 +91,18 @@ function analyze(paths, opts) {
   // Pascal's own release-scope count, 2026-08-24 — see roadmap-build-workflow memory).
   changes.delivered = current.filter((c) => Number.isFinite(parseFloat(c.priority)) && parseFloat(c.priority) < 0)
     .map((c) => ({ sym: c.sym, feature: c.feature }));
-  return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta, unassessed, belowCutLine };
+  return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta, unassessed, belowCutLine, assessLabels };
 }
 
 // Build records for user-approved additions (features chosen from the unassessed Aha list).
-// Falls back to the Aha name/priority when the override doesn't specify them.
-function buildAdditionRecords(additions, aha, renamer, clean) {
+// Falls back to the Aha name/priority when the override doesn't specify them. Not tied to any
+// assessment file, so its "prob" (if the override specifies one) only ever fills the first Prob
+// column; the rest stay blank.
+function buildAdditionRecords(additions, aha, renamer, clean, probColumns = 1) {
   return (additions || []).map((add) => {
     const h = aha.get(add.sym) || {};
+    const probs = new Array(Math.max(probColumns, 1)).fill('');
+    probs[0] = add.prob || '';
     return {
       sym: add.sym,
       milestone: add.milestone,
@@ -96,7 +110,7 @@ function buildAdditionRecords(additions, aha, renamer, clean) {
       feature: renamer(add.feature || clean(h.name || add.sym)),
       theme: add.theme || '',
       priority: (add.priority !== undefined && add.priority !== '') ? add.priority : (h.priority ?? ''),
-      prob: add.prob || '',
+      probs,
       description: renamer(add.description || ''),
     };
   });
@@ -131,7 +145,8 @@ function main() {
     // User-approved additions from the unassessed-Aha list: inject as records and mark them New.
     analysis.changes = analysis.changes || {};
     analysis.changes.added = analysis.changes.added || [];
-    for (const rec of buildAdditionRecords(ov.additions, aha, renamer, cleanName)) {
+    const probColumns = (analysis.assessLabels || []).length || 1;
+    for (const rec of buildAdditionRecords(ov.additions, aha, renamer, cleanName, probColumns)) {
       records.push(rec);
       analysis.changes.added.push({ sym: rec.sym, milestone: rec.milestone, feature: rec.feature });
     }
@@ -142,7 +157,7 @@ function main() {
       .filter((r) => !exclude.has(r.feature));
     const order = { [analysis.opts.currentRelease]: 0, [analysis.opts.nextRelease]: 1, [analysis.opts.futureLabel]: 2 };
     records.sort((x, y) => (order[x.milestone] - order[y.milestone]) || ((parseFloat(x.priority) || 9999) - (parseFloat(y.priority) || 9999)));
-    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {}, opts: analysis.opts });
+    const out = writeOutputs(a.outdir, a.date, { records, aha, prev, changes: analysis.changes, renamer, assessMeta: analysis.assessMeta || {}, opts: analysis.opts, assessLabels: analysis.assessLabels });
     console.log(`finalize: wrote\n ${out.srcPath}\n ${out.blPath}\n ${out.repPath}`);
   } else if (cmd === 'deck') {
     let theme;

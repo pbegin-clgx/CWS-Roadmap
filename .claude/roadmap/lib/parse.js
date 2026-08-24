@@ -58,14 +58,28 @@ function parseAha(path, sheetName = 'Report') {
   return m;
 }
 
+// Source sheet columns are resolved by header name, not fixed position — the number of "Prob ..."
+// columns varies cycle to cycle (one per assessment file), which shifts Description's position.
+function sourceColIndex(H) {
+  const probKey = Object.keys(H).filter((k) => k.startsWith('prob')).sort((a, b) => H[a] - H[b])[0];
+  return {
+    milestone: H['milestone'] ?? 0, product: H['product'] ?? 1, feature: H['feature'] ?? 2,
+    theme: H['strategic theme'] ?? 3, code: H['feature code'] ?? 4, priority: H['priority'] ?? 5,
+    prob: probKey != null ? H[probKey] : 6,
+    description: H['description'] ?? 7,
+  };
+}
+
 function parsePrevSource(path, sheetName = 'Source') {
   const rows = readSheet(path, sheetName);
   const m = new Map();
+  if (!rows.length) return m;
+  const c = sourceColIndex(headerIndex(rows[0]));
   for (let i = 1; i < rows.length; i++) {
-    const r = rows[i]; const sym = String(r[4]).trim();
+    const r = rows[i]; const sym = String(r[c.code]).trim();
     if (!sym) continue;
-    m.set(sym, { milestone: clean1(r[0]), product: clean1(r[1]), feature: clean1(r[2]), theme: clean1(r[3]),
-                 priority: r[5], prob: clean1(r[6]), description: String(r[7]).trim() });
+    m.set(sym, { milestone: clean1(r[c.milestone]), product: clean1(r[c.product]), feature: clean1(r[c.feature]), theme: clean1(r[c.theme]),
+                 priority: r[c.priority], prob: clean1(r[c.prob]), description: String(r[c.description] ?? '').trim() });
   }
   return m;
 }
@@ -73,11 +87,13 @@ function parsePrevSource(path, sheetName = 'Source') {
 function parsePrevSourceRows(path, sheetName = 'Source') {
   const rows = readSheet(path, sheetName);
   const out = [];
+  if (!rows.length) return out;
+  const c = sourceColIndex(headerIndex(rows[0]));
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     out.push({
-      milestone: clean1(r[0]), product: clean1(r[1]), feature: clean1(r[2]), theme: clean1(r[3]),
-      code: clean1(r[4]), priority: r[5], prob: clean1(r[6]), description: String(r[7]).trim(),
+      milestone: clean1(r[c.milestone]), product: clean1(r[c.product]), feature: clean1(r[c.feature]), theme: clean1(r[c.theme]),
+      code: clean1(r[c.code]), priority: r[c.priority], prob: clean1(r[c.prob]), description: String(r[c.description] ?? '').trim(),
     });
   }
   return out;

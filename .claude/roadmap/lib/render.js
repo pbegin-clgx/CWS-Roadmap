@@ -2,7 +2,6 @@ const { writeSheets } = require('./xlsx-io');
 const fs = require('fs');
 const path = require('path');
 
-const SOURCE_HEADER = ['Milestone','Product','Feature','Strategic Theme','Feature Code','priority','Prob','Description'];
 const BACKLOG_HEADER = ['Feature reference #','Old Priority','New Priority','Feature name','Initiative name','Release name','Feature status','Effort - man days','Dev Complete Rate','Prioritization','Feature tags','Change'];
 
 // Classify a feature's cross-cycle change for the Backlog "Change" column.
@@ -19,9 +18,22 @@ function changeLabel(sym, changes) {
   return tags.length ? tags.join(', ') : 'Unchanged';
 }
 
-function sourceRows(records) {
-  const rows = [SOURCE_HEADER.slice()];
-  for (const r of records) rows.push([r.milestone, r.product, r.feature, r.theme, r.sym, r.priority, r.prob, r.description]);
+// One "Prob" column per assessment file used this cycle (e.g. "Prob 8.7", "Prob 8.8"), each pulling
+// independently from its own assessment regardless of which milestone the feature landed in. With
+// only one assessment file, stays a single bare "Prob" column (unchanged from the legacy format).
+function probHeaders(probLabels) {
+  if (!probLabels || probLabels.length <= 1) return ['Prob'];
+  return probLabels.map((l) => `Prob ${l}`);
+}
+
+function sourceRows(records, probLabels) {
+  const headers = probHeaders(probLabels);
+  const rows = [['Milestone', 'Product', 'Feature', 'Strategic Theme', 'Feature Code', 'priority', ...headers, 'Description']];
+  for (const r of records) {
+    const probs = (r.probs && r.probs.length) ? r.probs : [r.prob || ''];
+    const vals = headers.map((_, i) => probs[i] ?? '');
+    rows.push([r.milestone, r.product, r.feature, r.theme, r.sym, r.priority, ...vals, r.description]);
+  }
   return rows;
 }
 
@@ -107,11 +119,11 @@ function renderChangeReport(ch) {
   return md;
 }
 
-function writeOutputs(dir, dateStr, { records, aha, prev, changes, renamer, assessMeta, opts }) {
+function writeOutputs(dir, dateStr, { records, aha, prev, changes, renamer, assessMeta, opts, assessLabels }) {
   const srcPath = path.join(dir, `Product Roadmap Source ${dateStr}.xlsx`);
   const blPath = path.join(dir, `Claims Product Backlog ${dateStr}.xlsx`);
   const repPath = path.join(dir, `Roadmap Change Report ${dateStr}.md`);
-  const sheets = { Source: sourceRows(records) };
+  const sheets = { Source: sourceRows(records, assessLabels) };
   if (opts) {
     const milestones = [opts.currentRelease, opts.nextRelease, opts.futureLabel];
     sheets.Summary = summaryRows(records, milestones);
