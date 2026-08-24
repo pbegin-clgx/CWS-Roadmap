@@ -26,13 +26,18 @@ test('backlogRows maps Old/New priority and 12 columns incl. Change', () => {
 });
 
 test('backlogRows Change column reflects change type and combines tags', () => {
-  const changes = { added: [], priorityUp: [], priorityDown: [{ sym: 'SYM-2561' }], reBucketed: [{ sym: 'SYM-2561' }], delivered: [{ sym: 'SYM-9', feature: 'Shipped thing' }] };
+  const changes = { added: [], priorityUp: [], priorityDown: [{ sym: 'SYM-2561' }], reBucketed: [{ sym: 'SYM-2561' }], delivered: [] };
   const rows = backlogRows(records, aha, prev, changes);
   assert.strictEqual(rows[1][11], 'Priority Down, Re-bucketed'); // combined tags
-  const delivered = rows.find((r) => r[0] === 'SYM-9');
-  assert.ok(delivered, 'delivered feature appended as a row');
-  assert.strictEqual(delivered[11], 'Delivered');
-  assert.strictEqual(delivered[3], 'Shipped thing'); // feature name
+});
+
+test('backlogRows tags a negative-priority record Delivered without removing it from the Backlog row set', () => {
+  // Delivered is now purely a label — the record stays a normal Backlog row (and Source stays
+  // untouched by this function entirely), it's just tagged, possibly combined with other tags.
+  const changes = { added: [], priorityUp: [], priorityDown: [{ sym: 'SYM-2561' }], reBucketed: [], delivered: [{ sym: 'SYM-2561', feature: 'Autosave Payment Progress' }] };
+  const rows = backlogRows(records, aha, prev, changes);
+  assert.strictEqual(rows.length, 2); // header + the one record, nothing appended
+  assert.strictEqual(rows[1][11], 'Delivered, Priority Down');
 });
 
 test('backlogRows applies the renamer to the Aha-sourced feature name', () => {

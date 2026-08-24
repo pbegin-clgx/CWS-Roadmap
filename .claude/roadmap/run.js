@@ -17,7 +17,7 @@ function analyze(paths, opts) {
   const ahaAll = paths.aha ? parseAha(paths.aha) : new Map();
 
   const buckets = {}; const newFeatures = []; const judgment = []; const current = [];
-  const assessMeta = {}; const deliveredByPriority = []; const belowCutLine = [];
+  const assessMeta = {}; const belowCutLine = [];
   const assessmentSyms = new Set([...primary.keys(), ...(nextAssess ? nextAssess.keys() : [])]);
   const nextNum = (String(opts.nextRelease).match(/8\.\d+/) || [])[0];
 
@@ -27,15 +27,6 @@ function analyze(paths, opts) {
     let ms = classify(a, opts);
     const c = prev.get(sym);
     const prio = a.priority === Infinity ? '' : a.priority;
-    // A negative Product Priority sometimes marks a feature carried over from an already-shipped
-    // release — but an explicit current-release commitment (Include 1-Yes/2.1/2.2) always wins:
-    // this Assessment also uses negative numbers as an "absolute top priority" ranking tier for
-    // locked-in current-release work that has NOT shipped yet (confirmed against Pascal's own
-    // release-scope count, 2026-08-24 — see roadmap-build-workflow memory).
-    if (ms !== opts.currentRelease && Number.isFinite(a.priority) && a.priority < 0) {
-      deliveredByPriority.push({ sym, feature: c ? c.feature : cleanName(a.summary) });
-      continue;
-    }
     if (ms === 'DROP') {
       // Below the Future cut-line — never shown on the Source/deck roadmap, but still worth
       // surfacing in the Backlog/Change Report so it isn't silently invisible everywhere.
@@ -84,13 +75,12 @@ function analyze(paths, opts) {
   const changes = detectChanges(prev, current, assessmentSyms);
   // Removed = on the previous roadmap but no longer in the Assessment (single-SYM rows only).
   changes.removed = changes.removed.filter((d) => /^SYM-\d+$/.test(String(d.sym).trim()));
-  // Delivered = features the current Assessment explicitly marks shipped via a negative Product Priority.
-  changes.delivered = [];
-  const deliveredSeen = new Set();
-  for (const d of deliveredByPriority) if (!deliveredSeen.has(d.sym)) { changes.delivered.push(d); deliveredSeen.add(d.sym); }
-  // A feature explicitly marked Delivered must never also appear under Removed.
-  const deliveredSet = new Set(changes.delivered.map((d) => d.sym));
-  changes.removed = changes.removed.filter((d) => !deliveredSet.has(d.sym));
+  // Delivered = a negative Product Priority marks a feature "feature-complete" for the Backlog's
+  // benefit. It is purely a label now — it never removes the feature from Source/buckets, since a
+  // negative-priority feature can still be an active, not-yet-shipped commitment (confirmed against
+  // Pascal's own release-scope count, 2026-08-24 — see roadmap-build-workflow memory).
+  changes.delivered = current.filter((c) => Number.isFinite(parseFloat(c.priority)) && parseFloat(c.priority) < 0)
+    .map((c) => ({ sym: c.sym, feature: c.feature }));
   return { opts, proposedCut, buckets, newFeatures, judgment, changes, assessMeta, unassessed, belowCutLine };
 }
 
