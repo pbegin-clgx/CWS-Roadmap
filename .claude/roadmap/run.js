@@ -37,14 +37,15 @@ function analyze(paths, opts) {
     let ms = classify(a, opts);
     const c = prev.get(sym);
     const prio = a.priority === Infinity ? '' : a.priority;
-    if (ms === 'DROP') {
-      // Below the Future cut-line — never shown on the Source/deck roadmap, but still worth
-      // surfacing in the Backlog/Change Report so it isn't silently invisible everywhere.
-      belowCutLine.push({ sym, product: c ? c.product : '', feature: c ? c.feature : cleanName(a.summary),
-        theme: c ? c.theme : '', priority: prio, prob: a.include, description: c ? c.description : '' });
-      continue;
-    }
+    // Below the Future cut-line — never shown on the Source/deck roadmap, but still worth
+    // surfacing in the Backlog/Change Report so it isn't silently invisible everywhere. Reached
+    // either straight from classify() (no next-assessment data) or from applyNextAssessment (the
+    // next release's own assessment explicitly excluded it and its own priority missed cutFuture too).
+    const dropBelowCutLine = () => belowCutLine.push({ sym, product: c ? c.product : '', feature: c ? c.feature : cleanName(a.summary),
+      theme: c ? c.theme : '', priority: prio, prob: a.include, description: c ? c.description : '' });
+    if (ms === 'DROP') { dropBelowCutLine(); continue; }
     ms = applyNextAssessment(ms, sym, nextAssess, opts);
+    if (ms === 'DROP') { dropBelowCutLine(); continue; }
     const rec = { sym, milestone: ms, product: c ? c.product : '', feature: c ? c.feature : cleanName(a.summary),
       theme: c ? c.theme : '', priority: prio, probs: probsFor(sym), description: c ? c.description : '' };
     (buckets[ms] = buckets[ms] || []).push(rec);
