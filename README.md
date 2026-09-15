@@ -1,122 +1,90 @@
-# Product Team Claude — PM Requirements Automation
+# Product Team Claude — Roadmap Automation
 
-This project gives your team Claude Code skills to write structured Aha child requirements in 15–30 minutes per feature.
+This project gives you Claude Code skills to build and maintain the Cotality Workspace Products roadmap — from the cycle's raw Aha export to a review-ready workbook to an on-brand PowerPoint deck.
 
 ---
 
 ## What you get
 
-- **/pm-req-new** — Claude fetches your Aha feature, reads relevant design docs, drafts child requirements split by product, asks clarifying questions, and writes the approved requirements to Aha.
-- **/pm-req-review** — Claude checks your requirements for missing products, contradictions, thin details, and unresolved questions before you hand off to the dev team.
+- **/roadmap-build** — Turns the cycle's Aha feature export and Release Assessment(s) into a **Product Roadmap Source** workbook, a **Claims Product Backlog**, and a **Change Report**. Applies the priority-driven cut-line rules automatically, then walks you through every judgment call — borderline placements, new-feature descriptions, unassessed features — before writing anything.
+- **/roadmap-deck** — Generates the **Release Plan & Roadmap** PowerPoint (Summary matrix + per-milestone Detailed slides) from a Product Roadmap Source workbook, styled with Cotality's corporate theme. Drop the generated slides into your manual master deck alongside the narrative slides (title, agenda, themes).
 
 ---
 
-## One-time setup (do this once)
+## One-time setup
 
-### 1. Get your personal Aha API key
+### 1. Install Node.js (if not already installed)
 
-In Aha: click your avatar → **Settings** → **Security** → **API keys** → **Create token**.
-
-Copy the token — you'll need it in step 2.
-
-### 2. Set your Aha API key as a Windows environment variable
-
-This keeps your key secure — it's never stored in the project files.
-
-1. Press **Win + R**, type `sysdm.cpl`, press Enter
-2. Click **Advanced** → **Environment Variables**
-3. Under **User variables** (top section), click **New**
-4. Variable name: `AHA_API_KEY`
-5. Variable value: paste your Aha API key
-6. Click OK on all dialogs
-
-**Then restart Claude Code** — it reads environment variables at launch time.
-
-### 3. Install Node.js (if not already installed)
-
-Claude Code uses Node.js to run the Aha connection. Check if you have it:
+Claude Code uses Node.js to run the roadmap build and deck scripts. Check if you have it:
 
 1. Open PowerShell (search "PowerShell" in the Start menu)
 2. Type `node --version` and press Enter
 
 If you see a version number (e.g., `v22.16.0`), you're good. If you see an error, download Node.js from [nodejs.org](https://nodejs.org) — install the LTS version.
 
-### 4. Clone this repo and open in Claude Code
+### 2. Install script dependencies
 
-Ask IT or your team lead for the repo URL, then:
+From the repo root:
+
+```
+cd .claude/roadmap
+npm install
+```
+
+This installs the `xlsx`, `pptxgenjs`, and `jszip` packages the build and deck scripts depend on.
+
+### 3. Clone this repo and open in Claude Code
 
 1. In Claude Code desktop: **File** → **Open Folder**
 2. Select the cloned `product-team-claude/` folder
 3. Start a new conversation
 
-### 5. Verify the Aha connection
-
-In Claude Code, start a new conversation and type:
-
-```
-/mcp
-```
-
-You should see `aha` listed as **connected** with 4 tools. If it shows as disconnected:
-- Check that `AHA_API_KEY` is set (step 2) and you restarted Claude Code
-- Check that Node.js is installed and in your PATH (step 3)
-
 ---
 
 ## Using the skills
 
-### Write requirements for a new feature
+### Build the roadmap Source, Backlog, and Change Report
 
 ```
-/pm-req-new SYM-12345
+/roadmap-build
 ```
 
-Replace `SYM-12345` with your actual feature reference from Aha.
+Before running, have ready:
+- The cycle's **Aha feature export** (xlsx), placed in `Roadmap/`
+- One or more **Release Assessment** files (xlsx) — current release first, optional next-release second
+- The **previous Product Roadmap Source** workbook (used as the carry-forward base)
+- The three **release labels** — current, next, and future (e.g. `v8.7 (Q3 2026)`, `v8.8 (Q4 2026)`, `Future (Q1-Q2 2027)`)
 
 Claude will:
-1. Fetch the feature from Aha
-2. Read any relevant design docs in the `docs/` folder
-3. Draft requirements split by affected product
-4. Ask you questions for anything unclear — one at a time
-5. Show you the full draft and ask you to approve
-6. Write the approved requirements directly to Aha
+1. Confirm the input files and release labels with you
+2. Run the analysis and present a review queue — the current/next-release cut-line, borderline judgment calls, draft descriptions for new features, and any Aha features missing from both the Assessment and prior Source
+3. Wait for your decisions on every item — nothing is written until you approve
+4. Write the **Product Roadmap Source**, **Claims Product Backlog**, and **Change Report** to `Roadmap/`, and summarize what changed
 
-**Typical time:** 15–30 minutes per feature.
-
-### Review requirements before dev team handoff
+### Generate the roadmap deck
 
 ```
-/pm-req-review SYM-12345
+/roadmap-deck
 ```
 
-Claude checks:
-- All affected products have requirements
-- No contradictions between requirements
-- Each requirement has enough detail for developers
-- No unresolved `[NEEDS CLARIFICATION]` markers
-- All requirements follow the correct format
-
-A clean pass means the feature is ready for the dev team to pick up.
+Point Claude at the **Product Roadmap Source `<date>.xlsx`** produced by `/roadmap-build` (it must contain the `Summary` and `Detailed *` sheets). Claude will:
+1. Confirm the source workbook and the output date
+2. Generate the PowerPoint — section dividers, the Summary matrix slide, and a Detailed slide per milestone
+3. Report the output path in `Roadmap/`, ready to drop into your master deck
 
 ---
 
-## Adding design documents
+## Keeping things current
 
-Design docs help Claude write more accurate requirements. To add a document:
-
-1. Go to this repo in GitHub (or Azure DevOps)
-2. Navigate to `docs/design-docs/`
-3. Click **Add file** → **Upload files**
-4. Upload your PDF, Word, or HTML document
-5. Commit the change
-
-Claude will find and read relevant documents automatically the next time you run `/pm-req-new`.
+- **Legacy product names** (e.g. "Estimate Mobile" → "Estimate for iOS") are normalized via `.claude/roadmap/renames.json` — edit that file when a product is renamed.
+- **Deck branding** (colors, fonts) lives in `.claude/roadmap/deck-theme.json` — edit it if marketing updates the brand guidelines.
+- **Cut-line thresholds** default to top ~70 by priority for next release, ~100 for Future — `/roadmap-build` will show you the boundary and let you adjust it per cycle.
 
 ---
 
 ## Getting help
 
 Ask Claude Code directly — it knows this project:
-- "How does /pm-req-new work?"
-- "Why did the review flag this requirement?"
-- "What products should I check for a field workflow feature?"
+- "How does /roadmap-build decide the cut-line?"
+- "Why was this feature moved to Future?"
+- "What do I need before running /roadmap-deck?"
